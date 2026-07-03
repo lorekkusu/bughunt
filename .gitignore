@@ -1,0 +1,18 @@
+# OS / editor junk
+.DS_Store
+
+# Python runtime / build
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+*.db
+uploads/
+
+# Harness scratch area: throwaway review copies live here
+projects/.bench/
+
+# Generated benchmark reports + raw artifacts (regenerable; keep dir via .gitkeep)
+harness/reports/*
+!harness/reports/.gitkeep

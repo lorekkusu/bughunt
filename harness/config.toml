@@ -1,0 +1,28 @@
+# bughunt harness configuration.
+# Paths are relative to this harness/ directory.
+
+[paths]
+projects_dir = "../projects"
+answers_dir  = "../answers"
+scratch_dir  = "../projects/.bench"   # gitignored working area for review copies
+reports_dir  = "reports"
+
+[judge]
+# LLM-as-judge runs via the local `claude` CLI (headless, no API key needed).
+# Deliberately a different vendor than an OpenAI/Codex subject-under-test.
+model = "opus"
+
+# ---- Projects (benchmark targets) -------------------------------------------
+[[projects]]
+name       = "python-basic"
+path       = "python-basic"      # under projects_dir
+answer_key = "python-basic.md"   # under answers_dir
+
+# ---- Providers (tools under test) -------------------------------------------
+# Each provider is implemented by an adapter in bench/providers/<name>.py.
+# The lists below just populate the interactive menus.
+[providers.codex]
+models         = ["gpt-5.5", "gpt-5.4", "gpt-5.4-mini"]
+efforts        = ["low", "medium", "high", "xhigh"]
+default_model  = "gpt-5.5"
+default_effort = "high"

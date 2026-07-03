@@ -1,0 +1,8 @@
+# Example configuration for vault-api
+max_upload_mb: 10
+session_ttl: 3600
+allowed_hosts:
+  - localhost
+  - 127.0.0.1
+feature_flags:
+  enable_backups: true

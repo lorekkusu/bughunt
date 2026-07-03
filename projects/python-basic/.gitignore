@@ -1,0 +1,10 @@
+# Answer keys live in ../../answers/ — never inside a project folder.
+
+# runtime / build
+.venv/
+__pycache__/
+*.pyc
+vault.db
+uploads/
+dist/
+.pytest_cache/
