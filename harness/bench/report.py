@@ -1,120 +1,128 @@
-"""Render run results to the console (rich) and to a markdown report file."""
+"""Per-config console output and fixed-format markdown report."""
 
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
 
-from .runner import RunResult
+from .runner import ConfigResult
 
 console = Console()
 
 _SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 
 
-def print_summary(r: RunResult) -> None:
-    found = set(r.verdict.found_ids)
-    title_by_id = {b["id"]: b for b in r.manifest.get("planted_bugs", [])}
+def stability(count: int, runs: int) -> tuple[str, str]:
+    """Return (symbol, rich_color) for a found-count out of `runs`."""
+    if count >= runs:
+        return "✅", "green"
+    if count == 0:
+        return "❌", "red"
+    return "⚠️", "yellow"
 
-    table = Table(title=f"{r.project} · {r.provider}/{r.model} · effort={r.effort}")
+
+def _fmt(v, spec="", suffix=""):
+    return f"{v:{spec}}{suffix}" if v is not None else "—"
+
+
+def print_summary(r: ConfigResult) -> None:
+    counts = r.per_bug_counts()
+    m = r.metrics()
+
+    tag = "  [magenta](manual)[/]" if r.manual else ""
+    tag += f"  [dim]prompt={r.prompt_id}[/]"
+    tag += "  [dim](cached)[/]" if r.skipped else ""
+    table = Table(
+        title=f"{r.project} · {r.provider}/{r.model} · effort={r.effort} · {r.runs} runs{tag}"
+    )
     table.add_column("ID"); table.add_column("Sev"); table.add_column("Bug")
     table.add_column("Found", justify="center")
-    for bug in sorted(
-        r.manifest.get("planted_bugs", []),
-        key=lambda b: (_SEV_ORDER.get(b.get("severity"), 9), b["id"]),
-    ):
-        hit = bug["id"] in found
+    for bug in sorted(r.planted, key=lambda b: (_SEV_ORDER.get(b.get("severity"), 9), b["id"])):
+        sym, color = stability(counts[bug["id"]], r.runs)
         table.add_row(
             bug["id"], bug.get("severity", "?"), bug["title"],
-            "[green]✅[/]" if hit else "[red]❌[/]",
+            f"[{color}]{sym} {counts[bug['id']]}/{r.runs}[/]",
         )
     console.print(table)
 
-    sev = r.severity_breakdown()
-    sev_str = " · ".join(
-        f"{k} {v[0]}/{v[1]}" for k, v in sorted(sev.items(), key=lambda kv: _SEV_ORDER.get(kv[0], 9))
+    rec = m["recall"]
+    console.print(
+        f"[bold]Recall[/] mean {_fmt(rec['mean'] and rec['mean']*100, '.0f', '%')} "
+        f"(min {_fmt(rec['min'] and rec['min']*100,'.0f','%')} / "
+        f"max {_fmt(rec['max'] and rec['max']*100,'.0f','%')})   "
+        f"[bold]FP[/] {_fmt(m['false_positives']['mean'], '.1f')}   "
+        f"[bold]Bonus[/] {_fmt(m['bonus']['mean'], '.1f')}"
     )
     console.print(
-        f"[bold]Recall[/] {r.found}/{r.total_planted} "
-        f"({r.recall*100:.0f}%)   [dim]{sev_str}[/]"
+        f"[bold]Speed[/] {_fmt(m['elapsed_s']['mean'], '.1f', 's')}   "
+        f"[bold]Out-tok[/] {_fmt(m['output_tokens']['mean'] and round(m['output_tokens']['mean']), ',')}   "
+        f"[bold]Est. cost[/] {_fmt(m['cost_usd']['mean'], '.4f') if m['cost_usd']['mean'] is not None else '—'}"
+        + ("  [dim]$ API-equiv[/]" if m["cost_usd"]["mean"] is not None else "")
     )
-    console.print(
-        f"[bold]False positives[/] {r.false_positives}   "
-        f"[bold]Bonus real bugs[/] {len(r.verdict.bonus_bugs)}"
-    )
-    if r.verdict.bonus_bugs:
-        for b in r.verdict.bonus_bugs:
-            console.print(f"  [yellow]+[/] {b.get('title','?')}")
-    for note in r.notes:
-        console.print(f"[yellow]{note}[/]")
+    rc_bad = [i + 1 for i, rr in enumerate(r.rounds) if rr.returncode != 0]
+    if rc_bad:
+        console.print(f"[yellow]⚠️ non-zero exit on round(s) {rc_bad} "
+                      f"(model may not support effort {r.effort!r})[/]")
 
 
-def write_markdown(r: RunResult, reports_dir: Path) -> Path:
+def write_markdown(r: ConfigResult, reports_dir: Path) -> Path:
     reports_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    out = reports_dir / f"{r.project}__{r.provider}__{r.model}__{r.effort}__{stamp}.md"
+    out = reports_dir / f"{r.project}__{r.provider}__{r.model}__{r.effort}.md"
 
-    found = set(r.verdict.found_ids)
+    counts = r.per_bug_counts()
+    m = r.metrics()
+
+    def pct(x):
+        return f"{x*100:.0f}%" if x is not None else "—"
+
     lines = [
-        f"# Benchmark Report — {r.project}",
+        f"# {r.project} · {r.provider}/{r.model} · effort=`{r.effort}`",
         "",
         "| | |", "|---|---|",
-        f"| Project | `{r.project}` |",
-        f"| Tool | {r.provider} |",
-        f"| Model | `{r.model}` |",
-        f"| Effort | `{r.effort}` |",
+        f"| Runs | {r.runs} |",
+        f"| Mode | {'manual' if r.manual else 'automated'} · prompt `{r.prompt_id}` |",
         f"| Judge | `{r.judge_model}` (claude) |",
-        f"| Started | {r.started} |",
-        f"| Command | `{r.review.command}` |",
+        f"| Code hash | `{r.code_hash}` |",
+        f"| Created | {r.created} |",
         "",
-        "## Headline",
+        "## Metrics (across runs)",
         "",
-        f"- **Recall:** {r.found} / {r.total_planted} = {r.recall*100:.0f}%",
-        f"- **False positives:** {r.false_positives}",
-        f"- **Bonus real bugs:** {len(r.verdict.bonus_bugs)}",
+        "| Metric | Mean | Min | Max |",
+        "|--------|------|-----|-----|",
+        f"| Recall | {pct(m['recall']['mean'])} | {pct(m['recall']['min'])} | {pct(m['recall']['max'])} |",
+        f"| False positives | {_fmt(m['false_positives']['mean'], '.1f')} | {_fmt(m['false_positives']['min'])} | {_fmt(m['false_positives']['max'])} |",
+        f"| Bonus real bugs | {_fmt(m['bonus']['mean'], '.1f')} | {_fmt(m['bonus']['min'])} | {_fmt(m['bonus']['max'])} |",
+        f"| Speed (s) | {_fmt(m['elapsed_s']['mean'], '.1f')} | {_fmt(m['elapsed_s']['min'], '.1f')} | {_fmt(m['elapsed_s']['max'], '.1f')} |",
+        f"| Output tokens | {_fmt(m['output_tokens']['mean'] and round(m['output_tokens']['mean']), ',')} | {_fmt(m['output_tokens']['min'])} | {_fmt(m['output_tokens']['max'])} |",
+        f"| Est. cost (USD, API-equiv) | {_fmt(m['cost_usd']['mean'], '.4f')} | {_fmt(m['cost_usd']['min'], '.4f')} | {_fmt(m['cost_usd']['max'], '.4f')} |",
         "",
-        "## Detection scorecard",
+        "> Costs are **API-equivalent estimates** (what these tokens would cost on the",
+        "> OpenAI API), not actual subscription spend. See `pricing.json`.",
         "",
-        "| ID | Severity | Bug | Found? |",
-        "|----|----------|-----|:------:|",
+        "## Detection stability",
+        "",
+        "Found in N of the runs. ✅ = every run · ⚠️ = some runs · ❌ = never.",
+        "",
+        "| ID | Severity | Bug | Found |",
+        "|----|----------|-----|:-----:|",
     ]
-    for bug in sorted(
-        r.manifest.get("planted_bugs", []),
-        key=lambda b: (_SEV_ORDER.get(b.get("severity"), 9), b["id"]),
-    ):
-        mark = "✅" if bug["id"] in found else "❌ **miss**"
-        lines.append(f"| {bug['id']} | {bug.get('severity','?')} | {bug['title']} | {mark} |")
+    for bug in sorted(r.planted, key=lambda b: (_SEV_ORDER.get(b.get("severity"), 9), b["id"])):
+        c = counts[bug["id"]]
+        sym, _ = stability(c, r.runs)
+        lines.append(f"| {bug['id']} | {bug.get('severity','?')} | {bug['title']} | {sym} {c}/{r.runs} |")
 
-    sev = r.severity_breakdown()
-    sev_str = " · ".join(
-        f"{k.capitalize()} {v[0]}/{v[1]}"
-        for k, v in sorted(sev.items(), key=lambda kv: _SEV_ORDER.get(kv[0], 9))
-    )
-    lines += ["", f"**By severity:** {sev_str}", ""]
+    # bonus / FP aggregated across rounds
+    bonus_titles: dict[str, int] = {}
+    for rr in r.rounds:
+        for b in rr.bonus_items:
+            t = b.get("title", "?")
+            bonus_titles[t] = bonus_titles.get(t, 0) + 1
+    if bonus_titles:
+        lines += ["", "## Bonus findings (real, not planted)", ""]
+        for t, c in sorted(bonus_titles.items(), key=lambda kv: -kv[1]):
+            lines.append(f"- {t} — seen in {c}/{r.runs} runs")
 
-    if r.verdict.false_positives:
-        lines += ["## False positives", ""]
-        for fp in r.verdict.false_positives:
-            lines.append(f"- `{fp.get('noise_id')}` — {fp.get('evidence','')}")
-        lines.append("")
-
-    if r.verdict.bonus_bugs:
-        lines += ["## Bonus findings (real, not planted)", ""]
-        for b in r.verdict.bonus_bugs:
-            lines.append(f"- **{b.get('title','?')}** — {b.get('evidence','')}")
-        lines.append("")
-
-    if r.notes:
-        lines += ["## Notes", ""] + [f"- {n}" for n in r.notes] + [""]
-
-    out.write_text("\n".join(lines))
-
-    # Persist raw artifacts next to the report for auditing / debugging.
-    out.with_suffix(".review.txt").write_text(
-        f"$ {r.review.command}\n(returncode {r.review.returncode})\n\n{r.review.raw_output}"
-    )
-    out.with_suffix(".judge.txt").write_text(r.verdict.raw_judge_output)
+    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return out

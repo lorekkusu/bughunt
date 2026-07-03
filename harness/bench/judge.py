@@ -108,6 +108,8 @@ def score(manifest: dict, review_output: str, model: str = "opus") -> Verdict:
         input=prompt,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     if proc.returncode != 0:
         raise JudgeError(f"claude judge failed (rc={proc.returncode}): {proc.stderr[:500]}")

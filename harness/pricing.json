@@ -1,0 +1,27 @@
+{
+  "updated_at": "2026-07-03",
+  "currency": "USD",
+  "unit": "per_1m_tokens",
+  "tier": "standard",
+  "source": "https://developers.openai.com/api/docs/pricing",
+  "disclaimer": "API list prices. All costs the harness reports are API-EQUIVALENT ESTIMATES (what these tokens WOULD cost on the API), not actual subscription/plan spend. Models without token accounting are skipped.",
+  "notes": {
+    "claude-sonnet-5": "Standard (non-promo) rate used. An introductory rate of $2/$10 per 1M in/out applies through 2026-08-31 but is intentionally NOT used here.",
+    "claude_cost_source": "The claude CLI reports total_cost_usd directly; the harness uses that for claude runs. These entries are kept for cross-checking and as a fallback.",
+    "cursor_cost_source": "cursor-agent reports token usage but no cost; the harness computes cost from these Cursor-published prices (all values official from the models-and-pricing table)."
+  },
+  "sources": {
+    "openai": "https://developers.openai.com/api/docs/pricing",
+    "anthropic": "claude-api skill model table (cached 2026-06-24)",
+    "cursor": "https://cursor.com/docs/models-and-pricing · https://cursor.com/docs/models/cursor-composer-2-5"
+  },
+  "models": {
+    "gpt-5.5":            {"input": 5.0,  "cached_input": 0.5,   "output": 30.0},
+    "gpt-5.4":            {"input": 2.5,  "cached_input": 0.25,  "output": 15.0},
+    "gpt-5.4-mini":       {"input": 0.75, "cached_input": 0.075, "output": 4.5},
+    "claude-opus-4-8":    {"input": 5.0,  "cached_input": 0.5,   "output": 25.0},
+    "claude-sonnet-5":    {"input": 3.0,  "cached_input": 0.3,   "output": 15.0},
+    "composer-2.5":       {"input": 0.5,  "cached_input": 0.2,   "output": 2.5},
+    "composer-2.5-fast":  {"input": 3.0,  "cached_input": 0.5,   "output": 15.0}
+  }
+}

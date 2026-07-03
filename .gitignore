@@ -13,6 +13,5 @@ uploads/
 # Harness scratch area: throwaway review copies live here
 projects/.bench/
 
-# Generated benchmark reports + raw artifacts (regenerable; keep dir via .gitkeep)
-harness/reports/*
-!harness/reports/.gitkeep
+# Bulky raw per-run dumps (auditing only); committed reports + results stay tracked
+harness/reports/raw/

@@ -5,7 +5,14 @@
 projects_dir = "../projects"
 answers_dir  = "../answers"
 scratch_dir  = "../projects/.bench"   # gitignored working area for review copies
-reports_dir  = "reports"
+results_dir  = "results"              # committed structured results (one json per config)
+reports_dir  = "reports"              # generated markdown/HTML
+pricing_file = "pricing.json"
+prompt_file  = "review_prompt.md"
+
+[run]
+default_runs = 3
+prompt_id    = "standard-v1"          # bump if you edit review_prompt.md
 
 [judge]
 # LLM-as-judge runs via the local `claude` CLI (headless, no API key needed).
@@ -18,11 +25,49 @@ name       = "python-basic"
 path       = "python-basic"      # under projects_dir
 answer_key = "python-basic.md"   # under answers_dir
 
-# ---- Providers (tools under test) -------------------------------------------
-# Each provider is implemented by an adapter in bench/providers/<name>.py.
-# The lists below just populate the interactive menus.
+[[projects]]
+name       = "python-pricing"
+path       = "python-pricing"
+answer_key = "python-pricing.md"
+
+[[projects]]
+name       = "python-scheduling"
+path       = "python-scheduling"
+answer_key = "python-scheduling.md"
+
+# ---- Providers -------------------------------------------------------------
 [providers.codex]
-models         = ["gpt-5.5", "gpt-5.4", "gpt-5.4-mini"]
+manual         = false
+native         = false
+instructions   = "Automated. `bench run --provider codex -m <model> -e <effort>`. Uses `codex exec --json -s read-only` with the standard prompt; reports token usage incl. reasoning tokens."
+models         = ["gpt-5.5"]
 efforts        = ["low", "medium", "high", "xhigh"]
 default_model  = "gpt-5.5"
 default_effort = "high"
+
+[providers.claude]
+manual         = false
+native         = false
+instructions   = "Automated. `bench run --provider claude -m <model> -e <effort>`. Uses `claude -p --output-format json --permission-mode bypassPermissions --effort <e>` on a fresh copy with the standard prompt; reports total_cost_usd."
+models         = ["claude-opus-4-8"]
+efforts        = ["low", "medium", "high", "xhigh", "max"]
+default_model  = "claude-opus-4-8"
+default_effort = "high"
+
+[providers.cursor-agent]
+manual         = false
+native         = false
+instructions   = "Automated. `bench run --provider cursor-agent -m composer-2.5`. Uses `cursor-agent -p --output-format json --model <m> --force --trust` (full-tree review on a fresh copy) with the standard prompt; reports token usage (cost computed from pricing.json)."
+models         = ["composer-2.5-fast"]
+efforts        = ["default"]
+default_model  = "composer-2.5-fast"
+default_effort = "default"
+
+[providers.cursor]
+manual         = true
+native         = false
+instructions   = "Manual. In Cursor IDE, open projects/python-basic at the current commit (clean tree), trigger the reviewer, and paste the contents of review_prompt.md as the prompt. Copy ALL findings to a file, then: `bench judge --provider cursor --result <file>` (repeat --result for 3 runs). See docs/manual-tools.md."
+models         = ["bugbot"]
+efforts        = ["default"]
+default_model  = "bugbot"
+default_effort = "default"
