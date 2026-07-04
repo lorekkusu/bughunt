@@ -2,8 +2,8 @@
 STANDARD REVIEW PROMPT — id: standard-v1
 
 This exact prompt is sent to EVERY tool and model under test, so results are
-comparable across providers (codex today; claude, glm, grok, coderabbit,
-greptile, … later). Only the HTML comment above is stripped; everything below the
+comparable across providers (codex, claude, cursor-agent, and cursor bugbot today;
+glm, grok, coderabbit, greptile, … later). Only the HTML comment above is stripped; everything below the
 comment is the literal prompt. Changing it invalidates prior results — bump the
 prompt_id in config.toml if you do.
 -->

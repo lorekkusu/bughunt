@@ -13,3 +13,5 @@ important topic (see `../harness/docs/authoring-advanced.md`).
 | Project | Lang | Theme | Bugs (C/H/M/L) | Focus |
 |---------|------|-------|----------------|-------|
 | `python-basic` | Python (UV/Flask) | Basic | 3 / 3 / 3 / 3 | Textbook web-backend vulns & correctness bugs |
+| `python-pricing` | Python (UV) | Money | 3 / 3 / 3 / 3 | Subtle money-math correctness (float/rounding/tax/discount) |
+| `python-scheduling` | Python (UV) | Date/time | 3 / 3 / 3 / 3 | Calendar & datetime correctness (intervals, tz, recurrence) |

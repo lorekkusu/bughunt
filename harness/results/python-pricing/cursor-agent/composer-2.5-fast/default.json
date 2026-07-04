@@ -1,0 +1,268 @@
+{
+  "project": "python-pricing",
+  "provider": "cursor-agent",
+  "model": "composer-2.5-fast",
+  "effort": "default",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "a9f8b2065c7c",
+  "runs": 3,
+  "created": "2026-07-04 08:14:28",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "Discount percent not clamped: percent > 1 yields a negative price",
+      "file": "src/pricing/discount.py",
+      "symbol": "apply_percent"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "Per-order coupon subtracted on every line item (multi-line over-discount)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "build"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Tax computed on the pre-discount subtotal (wrong tax base)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "build"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Refund returns float money from division instead of rounded integer cents",
+      "file": "src/pricing/refund.py",
+      "symbol": "refund_amount"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Proration hardcodes /30 and ignores the days_in_month argument",
+      "file": "src/pricing/proration.py",
+      "symbol": "prorate"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Tier boundary off-by-one: quantity at a tier's max falls into the next tier",
+      "file": "src/pricing/catalog.py",
+      "symbol": "unit_price"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "pct truncates the fractional cent instead of rounding half-up",
+      "file": "src/pricing/money.py",
+      "symbol": "pct"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "stack applies the second discount to the original subtotal, not the already-discounted amount",
+      "file": "src/pricing/discount.py",
+      "symbol": "stack"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "allocate drops the remainder when splitting an order discount (integer division)",
+      "file": "src/pricing/discount.py",
+      "symbol": "allocate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Loyalty threshold uses > instead of >= (spend exactly at a threshold misqualified)",
+      "file": "src/pricing/loyalty.py",
+      "symbol": "multiplier"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "to_dollars uses integer // 100 and truncates the cents part",
+      "file": "src/pricing/invoice.py",
+      "symbol": "to_dollars"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "average_line divides by len with no guard for empty input (ZeroDivisionError)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "average_line"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 3,
+      "elapsed_s": 35.6,
+      "usage": {
+        "input_tokens": 7194,
+        "cached_input_tokens": 86176,
+        "output_tokens": 5853
+      },
+      "cost_usd": 0.130883,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "average_line integer floor division loses fractional cents",
+          "evidence": "average_line() uses integer floor division (//), so the average can be off by up to len(lines) - 1 cents"
+        },
+        {
+          "title": "allocate ZeroDivisionError when line_count == 0",
+          "evidence": "`allocate()` divides by `line_count` with no check; `line_count == 0` raises `ZeroDivisionError`"
+        },
+        {
+          "title": "refund missing validation for days_used >= days_total",
+          "evidence": "When days_used >= days_total, the function returns 0 or a negative refund ... with no validation"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 3,
+      "elapsed_s": 38.8,
+      "usage": {
+        "input_tokens": 16978,
+        "cached_input_tokens": 118880,
+        "output_tokens": 6070
+      },
+      "cost_usd": 0.15049,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "allocate ZeroDivisionError when line_count=0",
+          "evidence": "allocate() raises ZeroDivisionError when line_count is 0"
+        },
+        {
+          "title": "refund ZeroDivisionError when days_total=0",
+          "evidence": "refund_amount() raises ZeroDivisionError when days_total is 0"
+        },
+        {
+          "title": "refund negative when days_used > days_total",
+          "evidence": "unused is negative and the function returns a negative refund"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 2,
+      "elapsed_s": 34.3,
+      "usage": {
+        "input_tokens": 12487,
+        "cached_input_tokens": 66112,
+        "output_tokens": 5892
+      },
+      "cost_usd": 0.121436,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "refund_amount ZeroDivisionError when days_total=0",
+          "evidence": "divides by days_total with no guard; days_total=0 raises ZeroDivisionError"
+        },
+        {
+          "title": "allocate ZeroDivisionError when line_count=0",
+          "evidence": "allocate() performs order_discount // line_count with no guard; line_count=0 raises ZeroDivisionError"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 1,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 3,
+    "M3": 3,
+    "L1": 3,
+    "L2": 3,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.9444444444444443,
+      "min": 0.9166666666666666,
+      "max": 1.0
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 2.6666666666666665,
+      "min": 2,
+      "max": 3
+    },
+    "elapsed_s": {
+      "mean": 36.23333333333333,
+      "min": 34.3,
+      "max": 38.8
+    },
+    "output_tokens": {
+      "mean": 5938.333333333333,
+      "min": 5853,
+      "max": 6070
+    },
+    "total_tokens": {
+      "mean": 18158.0,
+      "min": 13047,
+      "max": 23048
+    },
+    "cost_usd": {
+      "mean": 0.13426966666666668,
+      "min": 0.121436,
+      "max": 0.15049
+    }
+  }
+}

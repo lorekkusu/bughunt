@@ -1,9 +1,10 @@
 # Authoring harder projects — what makes a bug "advanced"
 
-Basis for expanding the benchmark beyond `python-basic`. The basic project is
-single-file, syntactic, OWASP-textbook — every tool scores high (Composer 2.5 hit
-100%). To *discriminate* tools you must plant the classes AI reviewers actually
-miss.
+Basis for authoring discriminating projects. The `python-basic` project is
+single-file, syntactic, OWASP-textbook — every tool scores high (composer-2.5-fast
+hit 100%). The two correctness-themed projects that followed (`python-pricing`,
+`python-scheduling`) are where tools actually separate. To *discriminate* tools you
+must plant the classes AI reviewers actually miss.
 
 ## What research + our own data agree on
 
@@ -26,20 +27,25 @@ Sources: CR-Bench (arXiv 2603.11078), Survey of Software Defect Datasets
 ## Themes, not just levels
 
 A project's name is `<lang>-<theme>`, where the theme can be a **difficulty level**
-(`python-basic`) OR an **important topic** (`python-authz`, `python-money`,
+(`python-basic`) OR an **important topic** (`python-pricing`, `python-scheduling`,
 `python-authz`, `go-concurrency`, `js-async`, …). Difficulty can vary *within* a
 theme. This keeps the benchmark organised around what actually matters instead of
 an artificial basic/advanced ladder.
 
-Candidate themes, ranked by how well they discriminate tools:
+Themes, ranked by how well they discriminate tools (✅ = already shipped):
 
 | Theme | Targets | Discrimination |
 |-------|---------|----------------|
 | `*-concurrency` | races, TOCTOU, atomicity, deadlock, lost updates | ★★★★★ |
 | `*-crossfile` | broken invariants / contracts across modules | ★★★★★ |
+| `*-money` ✅ `python-pricing` | float/Decimal, rounding, negative/overflow, idempotency | ★★★★ |
+| `*-datetime` ✅ `python-scheduling` | intervals, tz/naive-vs-UTC, recurrence, off-by-one slots | ★★★★ |
 | `*-authz` | missing/conditional auth, IDOR, workflow-state violations | ★★★★ |
-| `*-money` | float/Decimal, rounding, negative/overflow, idempotency | ★★★★ |
 | `*-errors` | swallowed exceptions, resource leaks, partial failure | ★★★ |
+
+Note: an earlier `*-concurrency` attempt was scrapped — famous race/TOCTOU patterns
+scored ~100% for every tool, so they don't discriminate despite the ★★★★★ *targets*.
+The shipped correctness themes (money, datetime) separate tools far better in practice.
 
 ## Design principles for planting advanced bugs
 

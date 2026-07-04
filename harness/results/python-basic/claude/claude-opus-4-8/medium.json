@@ -1,0 +1,288 @@
+{
+  "project": "python-basic",
+  "provider": "claude",
+  "model": "claude-opus-4-8",
+  "effort": "medium",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-04 08:26:34",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 4,
+      "elapsed_s": 43.5,
+      "usage": {
+        "input_tokens": 4412,
+        "cached_input_tokens": 53889,
+        "cache_creation_input_tokens": 11554,
+        "output_tokens": 3119
+      },
+      "cost_usd": 0.2425195,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Missing negative-amount check in transfer (fund theft)",
+          "evidence": "A negative amount passes the insufficient funds check and reverses the flow ... letting a caller steal funds"
+        },
+        {
+          "title": "Hardcoded default signing secret",
+          "evidence": "SECRET_KEY is a hardcoded default (\"change-me-signing-key\"); if shipped, all tokens are forgeable"
+        },
+        {
+          "title": "Non-constant-time password/hash comparison",
+          "evidence": "verify_password compares hashes with ==, which is not constant-time (use hmac.compare_digest)"
+        },
+        {
+          "title": "Unhandled KeyError -> 500 on missing JSON keys",
+          "evidence": "KeyError on missing JSON keys (body[\"username\"], body[\"from\"], etc.) also yields unhandled 500s"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 5,
+      "elapsed_s": 42.3,
+      "usage": {
+        "input_tokens": 4415,
+        "cached_input_tokens": 77940,
+        "cache_creation_input_tokens": 12497,
+        "output_tokens": 2746
+      },
+      "cost_usd": 0.25466500000000003,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Non-constant-time password comparison",
+          "evidence": "verify_password compares hashes with `==`, which short-circuits and is timing-attackable"
+        },
+        {
+          "title": "Hard-coded default signing secret",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is a hard-coded token-signing key"
+        },
+        {
+          "title": "No validation of transfer amount (negative amounts)",
+          "evidence": "A negative amount passes the `balance < amount` check and effectively transfers money in reverse"
+        },
+        {
+          "title": "Unchecked JSON keys cause 500s",
+          "evidence": "Bodies are parsed with `force=True` and accessed via `body[\"username\"]`... Missing keys raise `KeyError` \u2192 unhandled 500s"
+        },
+        {
+          "title": "Flask dev server in production",
+          "evidence": "`app.run()` runs the built-in dev server... this is a deployment risk"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 4,
+      "elapsed_s": 46.9,
+      "usage": {
+        "input_tokens": 4277,
+        "cached_input_tokens": 75801,
+        "cache_creation_input_tokens": 11178,
+        "output_tokens": 3109
+      },
+      "cost_usd": 0.24879049999999997,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded signing secret",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is a committed default"
+        },
+        {
+          "title": "Non-constant-time hash comparison in verify_password",
+          "evidence": "verify_password compares hashes with ==, which short-circuits and is ... vulnerable to timing attacks"
+        },
+        {
+          "title": "Missing positive-amount validation on transfer (negative amount)",
+          "evidence": "a negative amount lets a caller steal from the destination"
+        },
+        {
+          "title": "No token expiry/validation enforcement",
+          "evidence": "nothing ever validates or expires tokens"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 2,
+    "M1": 3,
+    "M2": 0,
+    "M3": 3,
+    "L1": 3,
+    "L2": 2,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.861111111111111,
+      "min": 0.75,
+      "max": 0.9166666666666666
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 4.333333333333333,
+      "min": 4,
+      "max": 5
+    },
+    "elapsed_s": {
+      "mean": 44.23333333333333,
+      "min": 42.3,
+      "max": 46.9
+    },
+    "output_tokens": {
+      "mean": 2991.3333333333335,
+      "min": 2746,
+      "max": 3119
+    },
+    "total_tokens": {
+      "mean": 7359.333333333333,
+      "min": 7161,
+      "max": 7531
+    },
+    "cost_usd": {
+      "mean": 0.24865833333333334,
+      "min": 0.2425195,
+      "max": 0.25466500000000003
+    }
+  }
+}

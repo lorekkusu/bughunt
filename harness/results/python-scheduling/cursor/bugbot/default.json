@@ -1,0 +1,244 @@
+{
+  "project": "python-scheduling",
+  "provider": "cursor",
+  "model": "bugbot",
+  "effort": "default",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "60fd3a139ff5",
+  "runs": 3,
+  "created": "2026-07-04 18:29:05",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "overlaps() only checks one direction, so real overlaps are missed \u2192 double-booking",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.overlaps"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "has_conflict skips bookings on a different calendar date \u2192 misses midnight-spanning conflicts",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.has_conflict"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "is_past compares a local-naive time against datetime.utcnow() \u2192 off by the UTC offset",
+      "file": "src/booking/reminders.py",
+      "symbol": "is_past"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "duration_minutes uses timedelta.seconds (ignores .days) \u2192 wrong for intervals \u2265 24h",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.duration_minutes"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "weekly() uses range(1, count+1), excluding the start date it documents as inclusive",
+      "file": "src/booking/recurrence.py",
+      "symbol": "weekly"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "free_slots uses `t <= day_end`, emitting a slot starting at/after the day end (off-by-one)",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.free_slots"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "parse_hhmm does not validate ranges (accepts hour>23 / minute>59)",
+      "file": "src/booking/parse.py",
+      "symbol": "parse_hhmm"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "next_available treats a time touching a booking's end as busy (`<=`) \u2192 skips a valid slot",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.next_available"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "monthly() adds timedelta(days=30) per step \u2192 drifts off the intended day of month",
+      "file": "src/booking/recurrence.py",
+      "symbol": "monthly"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "first_booking returns the first-inserted booking, not the earliest by start time",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.first_booking"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Interval.contains uses `<= when <=` (inclusive end); a time at the interval end is wrongly reported inside",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.contains"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "busiest_hour calls max() on an empty schedule \u2192 ValueError",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.busiest_hour"
+    }
+  ],
+  "manual": true,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 1,
+      "elapsed_s": null,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "first_booking raises IndexError on empty schedule",
+          "evidence": "It also raises IndexError on an empty schedule"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 2,
+      "elapsed_s": null,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "first_booking IndexError on empty schedule",
+          "evidence": "first_booking indexes self._bookings[0] with no empty guard, raising IndexError when the schedule has no bookings"
+        },
+        {
+          "title": "free_slots does not exclude occupied times",
+          "evidence": "free_slots returns every stepped timestamp between day_start and day_end without removing times that conflict with existing bookings, so occupied slots are reported as available"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 2,
+      "elapsed_s": null,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "first_booking IndexError on empty schedule",
+          "evidence": "first_booking() indexes self._bookings[0] with no empty-list guard, raising IndexError on an empty schedule"
+        },
+        {
+          "title": "free_slots never excludes booked times",
+          "evidence": "free_slots() emits a fixed time grid and never removes or marks slots that overlap existing bookings in _bookings"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 1,
+    "M1": 3,
+    "M2": 3,
+    "M3": 3,
+    "L1": 3,
+    "L2": 3,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.9444444444444443,
+      "min": 0.9166666666666666,
+      "max": 1.0
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 1.6666666666666667,
+      "min": 1,
+      "max": 2
+    },
+    "elapsed_s": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "output_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "total_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "cost_usd": {
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  }
+}

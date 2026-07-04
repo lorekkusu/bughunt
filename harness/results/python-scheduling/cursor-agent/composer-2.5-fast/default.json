@@ -1,0 +1,254 @@
+{
+  "project": "python-scheduling",
+  "provider": "cursor-agent",
+  "model": "composer-2.5-fast",
+  "effort": "default",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "60fd3a139ff5",
+  "runs": 3,
+  "created": "2026-07-04 08:19:38",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "overlaps() only checks one direction, so real overlaps are missed \u2192 double-booking",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.overlaps"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "has_conflict skips bookings on a different calendar date \u2192 misses midnight-spanning conflicts",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.has_conflict"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "is_past compares a local-naive time against datetime.utcnow() \u2192 off by the UTC offset",
+      "file": "src/booking/reminders.py",
+      "symbol": "is_past"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "duration_minutes uses timedelta.seconds (ignores .days) \u2192 wrong for intervals \u2265 24h",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.duration_minutes"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "weekly() uses range(1, count+1), excluding the start date it documents as inclusive",
+      "file": "src/booking/recurrence.py",
+      "symbol": "weekly"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "free_slots uses `t <= day_end`, emitting a slot starting at/after the day end (off-by-one)",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.free_slots"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "parse_hhmm does not validate ranges (accepts hour>23 / minute>59)",
+      "file": "src/booking/parse.py",
+      "symbol": "parse_hhmm"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "next_available treats a time touching a booking's end as busy (`<=`) \u2192 skips a valid slot",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.next_available"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "monthly() adds timedelta(days=30) per step \u2192 drifts off the intended day of month",
+      "file": "src/booking/recurrence.py",
+      "symbol": "monthly"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "first_booking returns the first-inserted booking, not the earliest by start time",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.first_booking"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Interval.contains uses `<= when <=` (inclusive end); a time at the interval end is wrongly reported inside",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.contains"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "busiest_hour calls max() on an empty schedule \u2192 ValueError",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.busiest_hour"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 2,
+      "elapsed_s": 37.2,
+      "usage": {
+        "input_tokens": 20204,
+        "cached_input_tokens": 100000,
+        "output_tokens": 6754
+      },
+      "cost_usd": 0.15131,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "free_slots ignores existing bookings",
+          "evidence": "free_slots() ignores existing bookings... Slots overlapping existing bookings... returned as \"free.\""
+        },
+        {
+          "title": "busiest_hour counts only start hour",
+          "evidence": "Bookings spanning multiple hours contribute only to their start hour, understating busy periods"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 3,
+      "elapsed_s": 95.0,
+      "usage": {
+        "input_tokens": 42187,
+        "cached_input_tokens": 247104,
+        "output_tokens": 10619
+      },
+      "cost_usd": 0.282837,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "first_booking IndexError on empty schedule",
+          "evidence": "Calling first_booking() on an empty schedule raises IndexError with no guard"
+        },
+        {
+          "title": "free_slots infinite loop when minutes=0",
+          "evidence": "With minutes=0, t += timedelta(minutes=0) never advances, so the while loop never terminates"
+        },
+        {
+          "title": "next_available infinite loop when minutes=0",
+          "evidence": "When minutes=0 and t falls inside a booking, t += step does not advance time, causing an infinite loop"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 0,
+      "elapsed_s": 45.4,
+      "usage": {
+        "input_tokens": 12615,
+        "cached_input_tokens": 151808,
+        "output_tokens": 8331
+      },
+      "cost_usd": 0.200869,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": []
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 2,
+    "M1": 3,
+    "M2": 1,
+    "M3": 3,
+    "L1": 3,
+    "L2": 3,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.9166666666666666,
+      "min": 0.8333333333333334,
+      "max": 1.0
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 1.6666666666666667,
+      "min": 0,
+      "max": 3
+    },
+    "elapsed_s": {
+      "mean": 59.199999999999996,
+      "min": 37.2,
+      "max": 95.0
+    },
+    "output_tokens": {
+      "mean": 8568.0,
+      "min": 6754,
+      "max": 10619
+    },
+    "total_tokens": {
+      "mean": 33570.0,
+      "min": 20946,
+      "max": 52806
+    },
+    "cost_usd": {
+      "mean": 0.211672,
+      "min": 0.15131,
+      "max": 0.282837
+    }
+  }
+}

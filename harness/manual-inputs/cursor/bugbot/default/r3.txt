@@ -1,0 +1,20 @@
+Bugbot found **14 defects** in the project (no git history, so the review used the full source tree). Findings below, sorted by severity.
+
+| Severity | Location | Finding |
+|----------|----------|---------|
+| high | `src/booking/interval.py:12-13` | `Interval.overlaps()` only checks whether the other interval’s start falls inside `self`, so many overlapping pairs are reported as non-overlapping. `Schedule.has_conflict()` relies on this and can allow double bookings. |
+| high | `src/booking/interval.py:15-16` | `duration_minutes()` uses `timedelta.seconds`, which excludes whole days, so multi-day intervals can report 0 minutes or otherwise incorrect lengths. |
+| high | `src/booking/calendar.py:26-29` | `has_conflict()` skips comparisons when booking start dates differ, so overnight and multi-day overlaps are never detected. |
+| high | `src/booking/calendar.py:34-41` | `free_slots()` emits a fixed time grid and never removes or marks slots that overlap existing bookings in `_bookings`. |
+| high | `src/booking/calendar.py:50-52` | `first_booking()` indexes `self._bookings[0]` with no empty-list guard, raising `IndexError` on an empty schedule. |
+| high | `src/booking/recurrence.py:6-8` | `weekly()` uses `range(1, count + 1)`, so the first generated date is one week after `start` instead of including `start` as documented. |
+| high | `src/booking/reminders.py:6-8` | `is_past()` compares a documented local naive `when` against `datetime.utcnow()`, which is naive but in UTC, not local time. |
+| medium | `src/booking/interval.py:18-20` | `contains()` treats `when == end` as inside the interval, contradicting the documented half-open `[start, end)` semantics. |
+| medium | `src/booking/calendar.py:38-40` | The slot loop uses `while t <= day_end`, so a slot starting exactly at `day_end` is included even when a slot of `minutes` length would extend past the allowed window. |
+| medium | `src/booking/calendar.py:43-47` | `next_available()` treats `t == b.end` as still inside a booking via `b.start <= t <= b.end`, blocking the first instant after a half-open interval ends. |
+| medium | `src/booking/calendar.py:50-52` | `first_booking()` returns the first inserted booking, not the earliest by start time as the docstring claims. |
+| medium | `src/booking/calendar.py:57-61` | `busiest_hour()` calls `max(counts, ...)` without handling the empty schedule case, raising `ValueError`. |
+| medium | `src/booking/parse.py:5-10` | `parse_hhmm()` parses and returns any integer hour and minute without enforcing the documented 0–23 and 0–59 ranges or rejecting malformed input. |
+| medium | `src/booking/recurrence.py:11-13` | `monthly()` advances by fixed 30-day `timedelta` steps rather than calendar months, producing drifting and wrong dates. |
+
+`src/booking/safe.py` holds correct reference implementations for overlap, duration, and UTC handling — the bugs above are in the non-`safe` modules. Say if you want these fixed.

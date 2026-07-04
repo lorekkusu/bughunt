@@ -57,7 +57,7 @@ default_effort = "high"
 [providers.cursor-agent]
 manual         = false
 native         = false
-instructions   = "Automated. `bench run --provider cursor-agent -m composer-2.5`. Uses `cursor-agent -p --output-format json --model <m> --force --trust` (full-tree review on a fresh copy) with the standard prompt; reports token usage (cost computed from pricing.json)."
+instructions   = "Automated. `bench run --provider cursor-agent -m composer-2.5-fast`. Uses `cursor-agent -p --output-format json --model <m> --force --trust` (full-tree review on a fresh copy) with the standard prompt; reports token usage (cost computed from pricing.json)."
 models         = ["composer-2.5-fast"]
 efforts        = ["default"]
 default_model  = "composer-2.5-fast"

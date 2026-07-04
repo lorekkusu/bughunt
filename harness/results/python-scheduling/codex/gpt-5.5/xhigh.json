@@ -1,0 +1,269 @@
+{
+  "project": "python-scheduling",
+  "provider": "codex",
+  "model": "gpt-5.5",
+  "effort": "xhigh",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "60fd3a139ff5",
+  "runs": 3,
+  "created": "2026-07-04 08:07:05",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "overlaps() only checks one direction, so real overlaps are missed \u2192 double-booking",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.overlaps"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "has_conflict skips bookings on a different calendar date \u2192 misses midnight-spanning conflicts",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.has_conflict"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "is_past compares a local-naive time against datetime.utcnow() \u2192 off by the UTC offset",
+      "file": "src/booking/reminders.py",
+      "symbol": "is_past"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "duration_minutes uses timedelta.seconds (ignores .days) \u2192 wrong for intervals \u2265 24h",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.duration_minutes"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "weekly() uses range(1, count+1), excluding the start date it documents as inclusive",
+      "file": "src/booking/recurrence.py",
+      "symbol": "weekly"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "free_slots uses `t <= day_end`, emitting a slot starting at/after the day end (off-by-one)",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.free_slots"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "parse_hhmm does not validate ranges (accepts hour>23 / minute>59)",
+      "file": "src/booking/parse.py",
+      "symbol": "parse_hhmm"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "next_available treats a time touching a booking's end as busy (`<=`) \u2192 skips a valid slot",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.next_available"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "monthly() adds timedelta(days=30) per step \u2192 drifts off the intended day of month",
+      "file": "src/booking/recurrence.py",
+      "symbol": "monthly"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "first_booking returns the first-inserted booking, not the earliest by start time",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.first_booking"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Interval.contains uses `<= when <=` (inclusive end); a time at the interval end is wrongly reported inside",
+      "file": "src/booking/interval.py",
+      "symbol": "Interval.contains"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "busiest_hour calls max() on an empty schedule \u2192 ValueError",
+      "file": "src/booking/calendar.py",
+      "symbol": "Schedule.busiest_hour"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 1,
+      "elapsed_s": 219.4,
+      "usage": {
+        "input_tokens": 144848,
+        "cached_input_tokens": 114048,
+        "output_tokens": 10563,
+        "reasoning_output_tokens": 6298
+      },
+      "cost_usd": 0.527914,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Zero/negative step causes non-terminating loop in free_slots/next_available",
+          "evidence": "free_slots(..., 0) never advances, negative values can run forever, and next_available(..., 0) loops forever when after is inside a booking"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 4,
+      "elapsed_s": 944.5,
+      "usage": {
+        "input_tokens": 104801,
+        "cached_input_tokens": 93824,
+        "output_tokens": 6009,
+        "reasoning_output_tokens": 3353
+      },
+      "cost_usd": 0.282067,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "free_slots ignores existing bookings",
+          "evidence": "free_slots() never checks existing bookings, so it returns occupied start times as \"free.\""
+        },
+        {
+          "title": "free_slots infinite loop when minutes<=0",
+          "evidence": "free_slots() can loop forever when minutes <= 0 because t does not advance toward day_end"
+        },
+        {
+          "title": "next_available infinite loop when minutes<=0",
+          "evidence": "next_available() can also loop forever when minutes <= 0 and after falls inside an existing booking"
+        },
+        {
+          "title": "next_available doesn't check full interval length",
+          "evidence": "checks only whether the proposed start instant is inside an existing booking, not whether the full minutes-long interval is available"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 3,
+      "elapsed_s": 238.5,
+      "usage": {
+        "input_tokens": 108809,
+        "cached_input_tokens": 77952,
+        "output_tokens": 11419,
+        "reasoning_output_tokens": 7493
+      },
+      "cost_usd": 0.535831,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "free_slots ignores existing bookings",
+          "evidence": "free_slots never checks existing bookings, so it returns occupied times as \u201cfree.\u201d"
+        },
+        {
+          "title": "minutes<=0 causes infinite loop",
+          "evidence": "free_slots(..., 0) loops forever, and next_available(..., 0) loops forever when after is inside a booking"
+        },
+        {
+          "title": "next_available doesn't check full interval free",
+          "evidence": "next_available only checks whether the start instant t is inside a booking, not whether the whole requested interval [t, t + minutes) is free"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 2,
+    "M3": 3,
+    "L1": 3,
+    "L2": 3,
+    "L3": 0
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.8888888888888888,
+      "min": 0.8333333333333334,
+      "max": 0.9166666666666666
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 2.6666666666666665,
+      "min": 1,
+      "max": 4
+    },
+    "elapsed_s": {
+      "mean": 467.4666666666667,
+      "min": 219.4,
+      "max": 944.5
+    },
+    "output_tokens": {
+      "mean": 9330.333333333334,
+      "min": 6009,
+      "max": 11419
+    },
+    "total_tokens": {
+      "mean": 128816.33333333333,
+      "min": 110810,
+      "max": 155411
+    },
+    "cost_usd": {
+      "mean": 0.448604,
+      "min": 0.282067,
+      "max": 0.535831
+    }
+  }
+}

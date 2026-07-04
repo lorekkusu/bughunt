@@ -1,0 +1,303 @@
+{
+  "project": "python-basic",
+  "provider": "claude",
+  "model": "claude-opus-4-8",
+  "effort": "low",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-04 08:23:15",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 5,
+      "elapsed_s": 38.1,
+      "usage": {
+        "input_tokens": 4284,
+        "cached_input_tokens": 53867,
+        "cache_creation_input_tokens": 10867,
+        "output_tokens": 2698
+      },
+      "cost_usd": 0.2244735,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded default signing key",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is a static, committed default... anyone can forge valid HMAC tokens"
+        },
+        {
+          "title": "Timing-unsafe password comparison",
+          "evidence": "verify_password uses == on hashes, which short-circuits and is timing-attackable"
+        },
+        {
+          "title": "No upload size enforcement",
+          "evidence": "max_upload_mb config exists but is never applied... accept arbitrary-size content (DoS)"
+        },
+        {
+          "title": "Unvalidated/negative transfer amount",
+          "evidence": "a negative amount reverses the transfer direction (steal funds)"
+        },
+        {
+          "title": "Unchecked JSON keys cause 500",
+          "evidence": "Missing JSON keys... raise KeyError \u2192 unhandled 500 rather than a clean 400"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 1,
+      "bonus": 5,
+      "elapsed_s": 33.8,
+      "usage": {
+        "input_tokens": 4284,
+        "cached_input_tokens": 53889,
+        "cache_creation_input_tokens": 10345,
+        "output_tokens": 2043
+      },
+      "cost_usd": 0.2028895,
+      "returncode": 0,
+      "fp_items": [
+        {
+          "noise_id": "N4",
+          "evidence": "parse_task_spec runs ast.literal_eval on external input ... trigger resource exhaustion (DoS)"
+        }
+      ],
+      "bonus_items": [
+        {
+          "title": "Hardcoded default HMAC secret key",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is a static, committed HMAC key ... anyone can forge valid tokens"
+        },
+        {
+          "title": "Missing auth on /transfer endpoint",
+          "evidence": "The /transfer endpoint performs no authentication/authorization, so any caller can move money between arbitrary accounts"
+        },
+        {
+          "title": "No validation of negative/invalid transfer amount",
+          "evidence": "A negative amount passes the < amount check and effectively transfers money in reverse"
+        },
+        {
+          "title": "Non-constant-time hash comparison",
+          "evidence": "verify_password compares hashes with ==, which short-circuits and is timing-sensitive"
+        },
+        {
+          "title": "Unhandled KeyError/500 on malformed JSON input",
+          "evidence": "direct body[\"username\"]/body[\"amount\"] indexing raises unhandled KeyError/500s on malformed input"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 1,
+      "bonus": 5,
+      "elapsed_s": 35.5,
+      "usage": {
+        "input_tokens": 4284,
+        "cached_input_tokens": 53908,
+        "cache_creation_input_tokens": 10364,
+        "output_tokens": 2118
+      },
+      "cost_usd": 0.20496399999999998,
+      "returncode": 0,
+      "fp_items": [
+        {
+          "noise_id": "N4",
+          "evidence": "ast.literal_eval on untrusted input ... can still be abused with deeply nested literals to exhaust memory/CPU"
+        }
+      ],
+      "bonus_items": [
+        {
+          "title": "Hardcoded default signing secret",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is a static default committed to source; anyone with the code can forge valid tokens"
+        },
+        {
+          "title": "Negative amount allows theft in transfer",
+          "evidence": "Negative amount also passes the < amount check and lets a caller steal by transferring a negative amount"
+        },
+        {
+          "title": "Non-constant-time password/hash comparison",
+          "evidence": "verify_password compares hashes with ==, which is timing-variable"
+        },
+        {
+          "title": "Unhandled malformed input (KeyError/uncaught 500)",
+          "evidence": "request.get_json(force=True) plus direct body[...] indexing raises unhandled KeyError ... ValueErrors propagate as uncaught 500s"
+        },
+        {
+          "title": "Non-dict YAML top-level crashes merge",
+          "evidence": "if the YAML top-level is a non-dict ... update raises"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 1,
+    "M1": 3,
+    "M2": 0,
+    "M3": 3,
+    "L1": 3,
+    "L2": 0,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.7777777777777778,
+      "min": 0.75,
+      "max": 0.8333333333333334
+    },
+    "false_positives": {
+      "mean": 0.6666666666666666,
+      "min": 0,
+      "max": 1
+    },
+    "bonus": {
+      "mean": 5.0,
+      "min": 5,
+      "max": 5
+    },
+    "elapsed_s": {
+      "mean": 35.800000000000004,
+      "min": 33.8,
+      "max": 38.1
+    },
+    "output_tokens": {
+      "mean": 2286.3333333333335,
+      "min": 2043,
+      "max": 2698
+    },
+    "total_tokens": {
+      "mean": 6570.333333333333,
+      "min": 6327,
+      "max": 6982
+    },
+    "cost_usd": {
+      "mean": 0.21077566666666667,
+      "min": 0.2028895,
+      "max": 0.2244735
+    }
+  }
+}

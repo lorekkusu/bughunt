@@ -16,3 +16,5 @@ scoring sheet.
 | Key | Matches project | Bugs (C/H/M/L) |
 |-----|-----------------|----------------|
 | `python-basic.md` | `projects/python-basic` | 3 / 3 / 3 / 3 |
+| `python-pricing.md` | `projects/python-pricing` | 3 / 3 / 3 / 3 |
+| `python-scheduling.md` | `projects/python-scheduling` | 3 / 3 / 3 / 3 |

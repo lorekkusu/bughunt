@@ -1,8 +1,8 @@
 # bughunt
 
-Single source of truth for benchmarking AI code-review tools (Codex today;
-Claude, GLM/opencode, Grok, CodeRabbit, Greptile, … later) against projects with
-a known, planted set of bugs.
+Single source of truth for benchmarking AI code-review tools (Codex, Claude, and
+Cursor — bugbot + cursor-agent — today; GLM/opencode, Grok, CodeRabbit, Greptile,
+… later) against projects with a known, planted set of bugs.
 
 ## Why this exists
 
@@ -18,9 +18,13 @@ transparent experiment, not an authoritative ranking.
 ```
 bughunt/
 ├── projects/     # benchmark targets (deliberately buggy code)
-│   └── python-basic/
+│   ├── python-basic/       # textbook web-backend vulns
+│   ├── python-pricing/     # subtle money-math correctness
+│   └── python-scheduling/  # date/time & calendar correctness
 ├── answers/      # grading keys — one per project (YAML manifest + writeup)
-│   └── python-basic.md
+│   ├── python-basic.md
+│   ├── python-pricing.md
+│   └── python-scheduling.md
 └── harness/      # the benchmark tool (Python + UV)
     ├── config.toml
     ├── review_prompt.md   # the ONE prompt sent to every tool/model (id: standard-v1)
@@ -77,8 +81,8 @@ uv run bench judge --provider cursor --result findings.txt
 uv run bench summary --serve
 ```
 
-Automated tools (codex, claude) are driven headlessly and get the same standard
-prompt. Manual tools (Cursor Bugbot, …) are triggered by hand and scored with
+Automated tools (codex, claude, cursor-agent) are driven headlessly and get the
+same standard prompt. Manual tools (Cursor Bugbot, …) are triggered by hand and scored with
 `bench judge` — see [`harness/docs/manual-tools.md`](harness/docs/manual-tools.md).
 New to the metrics? [`harness/docs/glossary.md`](harness/docs/glossary.md).
 

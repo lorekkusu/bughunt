@@ -1,0 +1,307 @@
+{
+  "project": "python-basic",
+  "provider": "codex",
+  "model": "gpt-5.5",
+  "effort": "high",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-04 06:25:41",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 7,
+      "elapsed_s": 112.4,
+      "usage": {
+        "input_tokens": 69928,
+        "cached_input_tokens": 58752,
+        "output_tokens": 4967,
+        "reasoning_output_tokens": 2618
+      },
+      "cost_usd": 0.234266,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Missing auth on /transfer",
+          "evidence": "/transfer performs money movement without requiring or validating any authentication token"
+        },
+        {
+          "title": "Negative transfer amounts",
+          "evidence": "transfer accepts negative amounts... enabling balance manipulation"
+        },
+        {
+          "title": "Self-transfer creates money",
+          "evidence": "Transferring from an account to itself creates money"
+        },
+        {
+          "title": "Hardcoded token signing key",
+          "evidence": "The token signing key is hardcoded as a known default... forge valid tokens"
+        },
+        {
+          "title": "Missing auth on /files",
+          "evidence": "/files/<name> serves stored files without authentication or ownership checks"
+        },
+        {
+          "title": "Unhandled transfer errors return 500",
+          "evidence": "Business errors from banking.transfer... propagate as unhandled exceptions... HTTP 500"
+        },
+        {
+          "title": "Missing file returns 500 not 404",
+          "evidence": "Missing files propagate FileNotFoundError as a 500 response"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 5,
+      "elapsed_s": 98.9,
+      "usage": {
+        "input_tokens": 70334,
+        "cached_input_tokens": 48512,
+        "output_tokens": 3859,
+        "reasoning_output_tokens": 1564
+      },
+      "cost_usd": 0.249136,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Transfer endpoint missing auth",
+          "evidence": "/transfer performs transfers without authenticating the caller or checking account ownership"
+        },
+        {
+          "title": "Files endpoint missing auth",
+          "evidence": "/files/<path:name> has no authentication or authorization"
+        },
+        {
+          "title": "Transfer accepts negative amounts",
+          "evidence": "transfer accepts negative amounts. A negative transfer increases the source balance"
+        },
+        {
+          "title": "Same-account transfer creates money",
+          "evidence": "Transferring from an account to itself creates money... changes balance 100 to 110"
+        },
+        {
+          "title": "Non-atomic debit/credit",
+          "evidence": "debit and credit are separate database transactions. If the second update fails after the first commits, funds are deducted without being credited"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 5,
+      "elapsed_s": 129.7,
+      "usage": {
+        "input_tokens": 86588,
+        "cached_input_tokens": 61184,
+        "output_tokens": 5620,
+        "reasoning_output_tokens": 3110
+      },
+      "cost_usd": 0.326212,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Transfer endpoint missing auth/ownership check",
+          "evidence": "app.py:27-31 exposes `/transfer` without authenticating the caller or checking account ownership. Any client can move money between arbitrary accounts"
+        },
+        {
+          "title": "Self-transfer creates money",
+          "evidence": "banking.py:8-19 allows `from_id == to_id`... a self-transfer writes `balance + amount` last and creates money"
+        },
+        {
+          "title": "Negative transfer amount abuse",
+          "evidence": "banking.py:13-19 accepts negative transfer amounts... increases the source balance while decreasing the destination balance"
+        },
+        {
+          "title": "File download endpoint missing auth/ownership check",
+          "evidence": "app.py:34-37 exposes file downloads without authentication or ownership checks"
+        },
+        {
+          "title": "Hardcoded default signing secret",
+          "evidence": "auth.py:9-10 hardcodes the token signing secret in source... forge tokens signed with `change-me-signing-key`"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 3,
+    "M3": 3,
+    "L1": 3,
+    "L2": 1,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.9444444444444443,
+      "min": 0.9166666666666666,
+      "max": 1.0
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 5.666666666666667,
+      "min": 5,
+      "max": 7
+    },
+    "elapsed_s": {
+      "mean": 113.66666666666667,
+      "min": 98.9,
+      "max": 129.7
+    },
+    "output_tokens": {
+      "mean": 4815.333333333333,
+      "min": 3859,
+      "max": 5620
+    },
+    "total_tokens": {
+      "mean": 80432.0,
+      "min": 74193,
+      "max": 92208
+    },
+    "cost_usd": {
+      "mean": 0.26987133333333335,
+      "min": 0.234266,
+      "max": 0.326212
+    }
+  }
+}

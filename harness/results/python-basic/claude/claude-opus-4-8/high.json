@@ -1,0 +1,283 @@
+{
+  "project": "python-basic",
+  "provider": "claude",
+  "model": "claude-opus-4-8",
+  "effort": "high",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-04 08:30:32",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 4,
+      "elapsed_s": 67.2,
+      "usage": {
+        "input_tokens": 4429,
+        "cached_input_tokens": 255172,
+        "cache_creation_input_tokens": 12524,
+        "output_tokens": 3984
+      },
+      "cost_usd": 0.374571,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Negative-amount transfer drains destination",
+          "evidence": "transfer doesn't reject amount <= 0 ... effectively stealing funds"
+        },
+        {
+          "title": "Hardcoded signing secret",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is a static, committed default"
+        },
+        {
+          "title": "Non-constant-time hash comparison",
+          "evidence": "verify_password compares hashes with ==, which short-circuits and is timing-variable"
+        },
+        {
+          "title": "Token has no expiry enforcement",
+          "evidence": "issue_token embeds a timestamp but nothing ever validates age"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 4,
+      "elapsed_s": 47.6,
+      "usage": {
+        "input_tokens": 4274,
+        "cached_input_tokens": 53773,
+        "cache_creation_input_tokens": 10964,
+        "output_tokens": 3650
+      },
+      "cost_usd": 0.2491465,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded signing secret",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is committed in source"
+        },
+        {
+          "title": "Missing auth on transfer + negative/zero amount",
+          "evidence": "transfer never validates that amount > 0... A negative amount passes the insufficient funds check"
+        },
+        {
+          "title": "Non-constant-time hash comparison",
+          "evidence": "verify_password compares hashes with ==... hmac.compare_digest is the safe choice"
+        },
+        {
+          "title": "Unchecked JSON keys cause 500s",
+          "evidence": "get_json(force=True) + unchecked keys... Missing keys raise KeyError \u2192 unhandled 500s"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 4,
+      "elapsed_s": 60.7,
+      "usage": {
+        "input_tokens": 4417,
+        "cached_input_tokens": 105154,
+        "cache_creation_input_tokens": 12527,
+        "output_tokens": 3946
+      },
+      "cost_usd": 0.298582,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Negative-amount transfer allows theft",
+          "evidence": "transfer never checks that amount > 0 ... letting a caller drain any account"
+        },
+        {
+          "title": "Hardcoded signing secret",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is a hardcoded default"
+        },
+        {
+          "title": "Non-constant-time password comparison",
+          "evidence": "verify_password compares hashes with ==, which short-circuits and is not constant-time"
+        },
+        {
+          "title": "Unhandled missing keys / malformed JSON causing 500",
+          "evidence": "body[\"username\"]/body[\"from\"] etc. raise KeyError (HTTP 500) on malformed input"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 0,
+    "M3": 3,
+    "L1": 3,
+    "L2": 0,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.8333333333333334,
+      "min": 0.8333333333333334,
+      "max": 0.8333333333333334
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 4.0,
+      "min": 4,
+      "max": 4
+    },
+    "elapsed_s": {
+      "mean": 58.5,
+      "min": 47.6,
+      "max": 67.2
+    },
+    "output_tokens": {
+      "mean": 3860.0,
+      "min": 3650,
+      "max": 3984
+    },
+    "total_tokens": {
+      "mean": 8233.333333333334,
+      "min": 7924,
+      "max": 8413
+    },
+    "cost_usd": {
+      "mean": 0.3074331666666667,
+      "min": 0.2491465,
+      "max": 0.374571
+    }
+  }
+}

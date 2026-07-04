@@ -1,0 +1,242 @@
+{
+  "project": "python-pricing",
+  "provider": "codex",
+  "model": "gpt-5.5",
+  "effort": "xhigh",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "a9f8b2065c7c",
+  "runs": 3,
+  "created": "2026-07-04 07:18:19",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "Discount percent not clamped: percent > 1 yields a negative price",
+      "file": "src/pricing/discount.py",
+      "symbol": "apply_percent"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "Per-order coupon subtracted on every line item (multi-line over-discount)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "build"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Tax computed on the pre-discount subtotal (wrong tax base)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "build"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Refund returns float money from division instead of rounded integer cents",
+      "file": "src/pricing/refund.py",
+      "symbol": "refund_amount"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Proration hardcodes /30 and ignores the days_in_month argument",
+      "file": "src/pricing/proration.py",
+      "symbol": "prorate"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Tier boundary off-by-one: quantity at a tier's max falls into the next tier",
+      "file": "src/pricing/catalog.py",
+      "symbol": "unit_price"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "pct truncates the fractional cent instead of rounding half-up",
+      "file": "src/pricing/money.py",
+      "symbol": "pct"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "stack applies the second discount to the original subtotal, not the already-discounted amount",
+      "file": "src/pricing/discount.py",
+      "symbol": "stack"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "allocate drops the remainder when splitting an order discount (integer division)",
+      "file": "src/pricing/discount.py",
+      "symbol": "allocate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Loyalty threshold uses > instead of >= (spend exactly at a threshold misqualified)",
+      "file": "src/pricing/loyalty.py",
+      "symbol": "multiplier"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "to_dollars uses integer // 100 and truncates the cents part",
+      "file": "src/pricing/invoice.py",
+      "symbol": "to_dollars"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "average_line divides by len with no guard for empty input (ZeroDivisionError)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "average_line"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 1,
+      "elapsed_s": 252.1,
+      "usage": {
+        "input_tokens": 218973,
+        "cached_input_tokens": 186880,
+        "output_tokens": 12019,
+        "reasoning_output_tokens": 7787
+      },
+      "cost_usd": 0.614475,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "tax.py float multiply before Decimal rounds half-cents down",
+          "evidence": "Tax multiplies with a float before converting to `Decimal` for half-up rounding ... 100 cents at 14.5% producing 14 instead of 15"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 1,
+      "elapsed_s": 236.3,
+      "usage": {
+        "input_tokens": 182882,
+        "cached_input_tokens": 149760,
+        "output_tokens": 11159,
+        "reasoning_output_tokens": 7476
+      },
+      "cost_usd": 0.57526,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "tax_for uses float multiplication before rounding",
+          "evidence": "tax_for multiplies using floats before rounding ... 360 * 0.0875 becomes 31.499999999999996 and rounds to 31 instead of 32"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 0,
+      "elapsed_s": 206.2,
+      "usage": {
+        "input_tokens": 129264,
+        "cached_input_tokens": 99328,
+        "output_tokens": 9608,
+        "reasoning_output_tokens": 5933
+      },
+      "cost_usd": 0.487584,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": []
+    }
+  ],
+  "per_bug": {
+    "C1": 0,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 3,
+    "M3": 3,
+    "L1": 3,
+    "L2": 3,
+    "L3": 0
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.8333333333333334,
+      "min": 0.8333333333333334,
+      "max": 0.8333333333333334
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 0.6666666666666666,
+      "min": 0,
+      "max": 1
+    },
+    "elapsed_s": {
+      "mean": 231.53333333333333,
+      "min": 206.2,
+      "max": 252.1
+    },
+    "output_tokens": {
+      "mean": 10928.666666666666,
+      "min": 9608,
+      "max": 12019
+    },
+    "total_tokens": {
+      "mean": 187968.33333333334,
+      "min": 138872,
+      "max": 230992
+    },
+    "cost_usd": {
+      "mean": 0.5591063333333334,
+      "min": 0.487584,
+      "max": 0.614475
+    }
+  }
+}

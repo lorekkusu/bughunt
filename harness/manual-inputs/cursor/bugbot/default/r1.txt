@@ -1,0 +1,17 @@
+Bugbot found **11 defects** (no critical issues). The branch diff was empty because this repo has no commits yet, so the review used the full source tree instead.
+
+| Severity | Location | Finding |
+|----------|----------|---------|
+| high | `src/booking/interval.py:12` | `Interval.overlaps` only checks whether `other.start` falls in `[self.start, self.end)`, so overlap is asymmetric. When the other interval starts earlier and extends into this one, the method returns false and scheduling logic can allow double bookings. |
+| high | `src/booking/calendar.py:28` | `has_conflict` skips bookings on a different start date, so overnight or cross-midnight overlaps are never detected even when the time ranges actually conflict. |
+| high | `src/booking/calendar.py:52` | `first_booking` returns `self._bookings[0]` (insertion order), not the earliest by start time as documented. It also raises `IndexError` on an empty schedule. |
+| high | `src/booking/recurrence.py:8` | `weekly` uses `range(1, count + 1)`, so the first returned date is one week after `start` instead of including `start` as the docstring promises. |
+| high | `src/booking/reminders.py:8` | `is_past` compares a naive local `when` against `datetime.utcnow()`. Outside UTC, past/future results are wrong because local time is compared to UTC without normalization. |
+| medium | `src/booking/interval.py:16` | `duration_minutes` uses `timedelta.seconds`, which ignores whole days. Intervals spanning midnight or multiple days report at most 1439 minutes instead of the true duration. |
+| medium | `src/booking/interval.py:20` | `contains` docstring defines half-open membership (`start <= when < end`), but the code uses `when <= end`, so the end boundary is incorrectly treated as inside the interval. |
+| medium | `src/booking/parse.py:10` | `parse_hhmm` splits and casts to int with no range checks despite the docstring promising rejection of out-of-range values. Inputs like `25:00` or `09:99` are accepted. |
+| medium | `src/booking/calendar.py:61` | `busiest_hour` calls `max()` on an empty `counts` dict when there are no bookings, raising `ValueError` instead of returning a sensible result. |
+| medium | `src/booking/calendar.py:46` | `next_available` treats `t == b.end` as still inside a booking (`b.start <= t <= b.end`). With half-open intervals, the instant a booking ends should already be available. |
+| medium | `src/booking/recurrence.py:13` | `monthly` advances with `timedelta(days=30 * i)` instead of calendar months, so occurrences drift from true month boundaries and mishandle varying month lengths. |
+
+`src/booking/safe.py` was reviewed and had no findings — it appears to be the correctly implemented reference for overlap, duration, and sorting.

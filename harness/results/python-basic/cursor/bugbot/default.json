@@ -1,0 +1,274 @@
+{
+  "project": "python-basic",
+  "provider": "cursor",
+  "model": "bugbot",
+  "effort": "default",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-04 18:25:41",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": true,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 6,
+      "elapsed_s": null,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Unauthenticated /transfer endpoint",
+          "evidence": "/transfer moves funds from JSON body fields only, with no identity or ownership check"
+        },
+        {
+          "title": "Unauthenticated /files endpoint",
+          "evidence": "/files/<path:name> serves files with no session or token check"
+        },
+        {
+          "title": "Hardcoded SECRET_KEY",
+          "evidence": "SECRET_KEY is a fixed string in source, so anyone with repo access can forge valid HMAC tokens"
+        },
+        {
+          "title": "Transfer accepts negative amounts",
+          "evidence": "transfer does not reject negative amount, so a negative value can increase the source balance"
+        },
+        {
+          "title": "Unhandled ValueError in do_transfer becomes HTTP 500",
+          "evidence": "do_transfer does not catch ValueError from banking.transfer"
+        },
+        {
+          "title": "login does not validate JSON shape",
+          "evidence": "login indexes body[\"username\"] and body[\"password\"] without checking the JSON shape"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 3,
+      "elapsed_s": null,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Transfer not atomic across accounts",
+          "evidence": "debits the source and credits the destination in separate update_balance calls ... a failure after the first write can permanently lose or duplicate funds"
+        },
+        {
+          "title": "Negative transfer amount allowed",
+          "evidence": "transfer never requires amount to be positive, so a negative value passes the balance check"
+        },
+        {
+          "title": "Hardcoded token signing secret",
+          "evidence": "SECRET_KEY is a fixed string in source, so anyone with repo access can forge valid HMAC tokens"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 4,
+      "elapsed_s": null,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded SECRET_KEY enables token forgery",
+          "evidence": "SECRET_KEY is hardcoded in source, so anyone ... can forge valid HMAC tokens"
+        },
+        {
+          "title": "Self-transfer inflates balance via stale in-memory value",
+          "evidence": "When from_id == to_id ... using a stale in-memory balance, inflating the account by amount"
+        },
+        {
+          "title": "Negative transfer amount reverses direction",
+          "evidence": "transfer does not require amount > 0; a negative value passes the insufficient-funds check and reverses the debit/credit direction"
+        },
+        {
+          "title": "Unhandled ValueError yields HTTP 500 instead of client error",
+          "evidence": "do_transfer does not catch ValueError from banking.transfer ... surface as HTTP 500"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 0,
+    "M3": 3,
+    "L1": 3,
+    "L2": 2,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.8888888888888888,
+      "min": 0.8333333333333334,
+      "max": 0.9166666666666666
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 4.333333333333333,
+      "min": 3,
+      "max": 6
+    },
+    "elapsed_s": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "output_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "total_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "cost_usd": {
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  }
+}

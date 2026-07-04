@@ -1,0 +1,334 @@
+{
+  "project": "python-basic",
+  "provider": "cursor-agent",
+  "model": "composer-2.5-fast",
+  "effort": "default",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-04 08:11:23",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 8,
+      "elapsed_s": 88.3,
+      "usage": {
+        "input_tokens": 19227,
+        "cached_input_tokens": 257787,
+        "output_tokens": 10907
+      },
+      "cost_usd": 0.2924985,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded signing secret",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" ... Anyone who knows it can forge valid HMAC signatures"
+        },
+        {
+          "title": "Tokens issued but never validated",
+          "evidence": "Login returns a token, but no route checks it... Authentication is effectively unused"
+        },
+        {
+          "title": "Negative transfer amounts not rejected",
+          "evidence": "no amount > 0 check. A negative amount... reversing the intended transfer"
+        },
+        {
+          "title": "Missing request validation (KeyError/TypeError as 500)",
+          "evidence": "Missing keys raise KeyError; a null/invalid body raises TypeError... surface as HTTP 500"
+        },
+        {
+          "title": "Unhandled ValueError from transfers",
+          "evidence": "the route does not catch it. Clients get HTTP 500 instead of a clear 4xx"
+        },
+        {
+          "title": "DB not initialized on WSGI import",
+          "evidence": "init_db() runs only when main() is called... leaves tables missing"
+        },
+        {
+          "title": "Token expiry not enforced",
+          "evidence": "nothing validates age or expiry. Stolen tokens remain valid indefinitely"
+        },
+        {
+          "title": "Unhandled missing files (FileNotFoundError as 500)",
+          "evidence": "read_user_file raises FileNotFoundError... clients receive HTTP 500 instead of 404"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 6,
+      "elapsed_s": 37.6,
+      "usage": {
+        "input_tokens": 23512,
+        "cached_input_tokens": 96096,
+        "output_tokens": 6303
+      },
+      "cost_usd": 0.142593,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded signing key",
+          "evidence": "SECRET_KEY = \"change-me-signing-key\" is embedded in source ... forge valid auth tokens"
+        },
+        {
+          "title": "Negative transfer amounts allowed",
+          "evidence": "no check that amount > 0 ... transferring -30 from balance 100 yields 130"
+        },
+        {
+          "title": "/transfer does not handle ValueError",
+          "evidence": "route has no handler, so clients get HTTP 500 instead of a proper 4xx"
+        },
+        {
+          "title": "Login lacks input validation",
+          "evidence": "Missing or malformed JSON bodies cause KeyError or TypeError"
+        },
+        {
+          "title": "Missing file reads surface as 500",
+          "evidence": "read_user_file does not catch FileNotFoundError ... returns HTTP 500 for unknown files instead of 404"
+        },
+        {
+          "title": "No token expiration enforcement",
+          "evidence": "tokens embed a timestamp but nothing enforces expiration ... never checked against session_ttl"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 10,
+      "elapsed_s": 60.5,
+      "usage": {
+        "input_tokens": 40244,
+        "cached_input_tokens": 222816,
+        "output_tokens": 9669
+      },
+      "cost_usd": 0.256443,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded default signing key",
+          "evidence": "The token signing key is hardcoded as \"change-me-signing-key\" ... can forge valid authentication tokens"
+        },
+        {
+          "title": "Missing authentication on endpoints",
+          "evidence": "Account lookup, fund transfers, and file download endpoints perform no authentication or authorization"
+        },
+        {
+          "title": "No token verification implemented",
+          "evidence": "there is no verify_token ... and no endpoint checks tokens"
+        },
+        {
+          "title": "Negative transfer amounts create money",
+          "evidence": "transferring -50 from a 100 balance yields 150, creating money"
+        },
+        {
+          "title": "Non-atomic transfer loses funds on partial failure",
+          "evidence": "If the second update fails after the first commits, funds are lost with no rollback"
+        },
+        {
+          "title": "Unhandled ValueError in /transfer route",
+          "evidence": "does not catch ValueError from banking.transfer ... surface as unhandled 500 errors"
+        },
+        {
+          "title": "Missing amount type/positivity validation",
+          "evidence": "Non-numeric types raise TypeError at comparison time, and zero-amount transfers are allowed"
+        },
+        {
+          "title": "Unvalidated JSON keys cause 500s",
+          "evidence": "Missing keys raise KeyError and result in 500 responses instead of 400 Bad Request"
+        },
+        {
+          "title": "YAML non-dict value corrupts config",
+          "evidence": "If YAML parses to a non-dict value ... merged.update(data) iterates the value's items incorrectly"
+        },
+        {
+          "title": "Non-constant-time hash comparison",
+          "evidence": "verify_password uses a normal string equality check on password hashes, which is not constant-time"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 3,
+    "M3": 3,
+    "L1": 3,
+    "L2": 3,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 8.0,
+      "min": 6,
+      "max": 10
+    },
+    "elapsed_s": {
+      "mean": 62.13333333333333,
+      "min": 37.6,
+      "max": 88.3
+    },
+    "output_tokens": {
+      "mean": 8959.666666666666,
+      "min": 6303,
+      "max": 10907
+    },
+    "total_tokens": {
+      "mean": 36620.666666666664,
+      "min": 29815,
+      "max": 49913
+    },
+    "cost_usd": {
+      "mean": 0.23051149999999998,
+      "min": 0.142593,
+      "max": 0.2924985
+    }
+  }
+}

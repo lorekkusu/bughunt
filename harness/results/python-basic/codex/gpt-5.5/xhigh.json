@@ -1,0 +1,304 @@
+{
+  "project": "python-basic",
+  "provider": "codex",
+  "model": "gpt-5.5",
+  "effort": "xhigh",
+  "prompt_id": "standard-v1",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-04 06:42:26",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 3,
+      "elapsed_s": 238.1,
+      "usage": {
+        "input_tokens": 113150,
+        "cached_input_tokens": 81024,
+        "output_tokens": 11700,
+        "reasoning_output_tokens": 7912
+      },
+      "cost_usd": 0.552142,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Negative transfer amounts not rejected",
+          "evidence": "Transfers do not reject negative amounts. A negative transfer increases the source balance"
+        },
+        {
+          "title": "Hard-coded token signing key",
+          "evidence": "The token signing key is hard-coded as change-me-signing-key ... tokens can be forged"
+        },
+        {
+          "title": "Unhandled input/errors cause 500s",
+          "evidence": "index JSON fields without validating ... raise server errors instead of controlled 400 responses"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 3,
+      "bonus": 5,
+      "elapsed_s": 294.1,
+      "usage": {
+        "input_tokens": 207519,
+        "cached_input_tokens": 178304,
+        "output_tokens": 14311,
+        "reasoning_output_tokens": 10142
+      },
+      "cost_usd": 0.664557,
+      "returncode": 0,
+      "fp_items": [
+        {
+          "noise_id": "N3",
+          "evidence": "The token signing key is hard-coded as a known default. Anyone with the source can forge valid-looking tokens"
+        },
+        {
+          "noise_id": "N2",
+          "evidence": "Uploaded files are stored only by basename and overwrite existing files with the same name ... data loss or cross-user file replacement"
+        },
+        {
+          "noise_id": "N5",
+          "evidence": "backoff_delay computes 2**attempt before applying the min(..., 30) cap. Very large attempt values can consume excessive CPU or memory"
+        }
+      ],
+      "bonus_items": [
+        {
+          "title": "/transfer endpoint missing auth",
+          "evidence": "/transfer has no authentication or authorization, so any caller can move funds from any account ID to any other account ID"
+        },
+        {
+          "title": "Negative transfer amounts accepted",
+          "evidence": "A negative amount increases the source balance and decreases the destination balance"
+        },
+        {
+          "title": "Self-transfer mints money",
+          "evidence": "Transferring from an account to itself mints money. The second update overwrites the first"
+        },
+        {
+          "title": "/files download missing auth",
+          "evidence": "/files/<name> has no authentication or per-user authorization ... any known stored filename can be downloaded by anyone"
+        },
+        {
+          "title": "Client errors escape as 500s",
+          "evidence": "Expected client errors ... are allowed to escape as server errors instead of controlled 400/404 responses"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 1,
+      "bonus": 4,
+      "elapsed_s": 300.8,
+      "usage": {
+        "input_tokens": 252403,
+        "cached_input_tokens": 205696,
+        "output_tokens": 14798,
+        "reasoning_output_tokens": 10257
+      },
+      "cost_usd": 0.780323,
+      "returncode": 0,
+      "fp_items": [
+        {
+          "noise_id": "N3",
+          "evidence": "Token signing uses a hardcoded public default secret... tokens forged"
+        }
+      ],
+      "bonus_items": [
+        {
+          "title": "Broken access control on /transfer",
+          "evidence": "`/transfer` performs money movement without authenticating the caller or authorizing account ownership"
+        },
+        {
+          "title": "Negative transfer amounts accepted",
+          "evidence": "A negative amount credits the source and debits the destination"
+        },
+        {
+          "title": "Self-transfer mints money",
+          "evidence": "Transfers where `from_id == to_id` are not rejected... minting money into that account"
+        },
+        {
+          "title": "Missing error handling on API inputs",
+          "evidence": "Missing fields, bad types, nonexistent accounts... can become 500 errors instead of controlled 4xx responses"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 3,
+    "M1": 3,
+    "M2": 3,
+    "M3": 3,
+    "L1": 3,
+    "L2": 0,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.9166666666666666,
+      "min": 0.9166666666666666,
+      "max": 0.9166666666666666
+    },
+    "false_positives": {
+      "mean": 1.3333333333333333,
+      "min": 0,
+      "max": 3
+    },
+    "bonus": {
+      "mean": 4.0,
+      "min": 3,
+      "max": 5
+    },
+    "elapsed_s": {
+      "mean": 277.6666666666667,
+      "min": 238.1,
+      "max": 300.8
+    },
+    "output_tokens": {
+      "mean": 13603.0,
+      "min": 11700,
+      "max": 14798
+    },
+    "total_tokens": {
+      "mean": 204627.0,
+      "min": 124850,
+      "max": 267201
+    },
+    "cost_usd": {
+      "mean": 0.665674,
+      "min": 0.552142,
+      "max": 0.780323
+    }
+  }
+}

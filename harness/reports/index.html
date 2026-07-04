@@ -11,4 +11,132 @@ th { background: #8881; } td.bug { text-align: left; white-space: nowrap; }
 .badge { font-family: -apple-system, system-ui, sans-serif; font-size: 11px; padding: 1px 6px; border-radius: 10px; background: #a05ac033; color: #a05ac0; }
 </style></head><body><h1>bughunt — benchmark summary</h1>
 <p class="sub">✅ found every run · ⚠️ some runs · ❌ never. Costs are API-equivalent estimates, not actual spend. <span class="badge">manual</span> = human-triggered tool scored via <code>bench judge</code>; a <code>native</code> prompt means the tool used its own prompt (not directly comparable to standard-v1).</p>
-<p><em>No results yet. Run <code>bench run</code> first.</em></p></body></html>
+<h2>python-basic</h2>
+<h3>🏆 Leaderboard</h3>
+<table class="metrics"><thead><tr><th>#</th><th>Config</th><th>Recall</th><th>FP</th><th>$/run</th><th>Speed</th></tr></thead><tbody>
+<tr><td>🥇</td><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>100%</td><td>0.0</td><td>$0.2305</td><td>62s</td></tr>
+<tr><td>🥈</td><td class="cfg">codex/gpt-5.5/high</td><td>94%</td><td>0.0</td><td>$0.2699</td><td>114s</td></tr>
+<tr><td>🥉</td><td class="cfg">codex/gpt-5.5/xhigh</td><td>92%</td><td>1.3</td><td>$0.6657</td><td>278s</td></tr>
+<tr><td>4</td><td class="cfg">codex/gpt-5.5/low</td><td>89%</td><td>0.3</td><td>$0.1936</td><td>77s</td></tr>
+<tr><td>5</td><td class="cfg">codex/gpt-5.5/medium</td><td>89%</td><td>0.7</td><td>$0.2340</td><td>92s</td></tr>
+<tr><td>6</td><td class="cfg">cursor/bugbot/default <span class="badge">manual</span></td><td>89%</td><td>0.0</td><td>—</td><td>—</td></tr>
+<tr><td>7</td><td class="cfg">claude/claude-opus-4-8/xhigh</td><td>86%</td><td>0.0</td><td>$0.4693</td><td>115s</td></tr>
+<tr><td>8</td><td class="cfg">claude/claude-opus-4-8/max</td><td>86%</td><td>0.0</td><td>$0.6657</td><td>202s</td></tr>
+<tr><td>9</td><td class="cfg">claude/claude-opus-4-8/medium</td><td>86%</td><td>0.0</td><td>$0.2487</td><td>44s</td></tr>
+<tr><td>10</td><td class="cfg">claude/claude-opus-4-8/high</td><td>83%</td><td>0.0</td><td>$0.3074</td><td>58s</td></tr>
+<tr><td>11</td><td class="cfg">claude/claude-opus-4-8/low</td><td>78%</td><td>0.7</td><td>$0.2108</td><td>36s</td></tr>
+</tbody></table>
+<h3>Metrics</h3>
+<table class="metrics"><thead><tr><th>Config</th><th>Runs</th><th>Recall mean</th><th>min–max</th><th>FP</th><th>Bonus</th><th>Speed</th><th>Out-tok</th><th>Est. $</th></tr></thead><tbody>
+<tr><td class="cfg">claude/claude-opus-4-8/low</td><td>3</td><td>78%</td><td>75%–83%</td><td>0.7</td><td>5.0</td><td>35.8s</td><td>2,286</td><td>$0.2108</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/medium</td><td>3</td><td>86%</td><td>75%–92%</td><td>0.0</td><td>4.3</td><td>44.2s</td><td>2,991</td><td>$0.2487</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/high</td><td>3</td><td>83%</td><td>83%–83%</td><td>0.0</td><td>4.0</td><td>58.5s</td><td>3,860</td><td>$0.3074</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/xhigh</td><td>3</td><td>86%</td><td>83%–92%</td><td>0.0</td><td>3.3</td><td>114.9s</td><td>7,810</td><td>$0.4693</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/max</td><td>3</td><td>86%</td><td>83%–92%</td><td>0.0</td><td>4.3</td><td>202.3s</td><td>14,245</td><td>$0.6657</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/low</td><td>3</td><td>89%</td><td>83%–92%</td><td>0.3</td><td>4.3</td><td>77.2s</td><td>2,792</td><td>$0.1936</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/medium</td><td>3</td><td>89%</td><td>83%–92%</td><td>0.7</td><td>3.7</td><td>91.8s</td><td>3,602</td><td>$0.2340</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/high</td><td>3</td><td>94%</td><td>92%–100%</td><td>0.0</td><td>5.7</td><td>113.7s</td><td>4,815</td><td>$0.2699</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/xhigh</td><td>3</td><td>92%</td><td>92%–92%</td><td>1.3</td><td>4.0</td><td>277.7s</td><td>13,603</td><td>$0.6657</td></tr>
+<tr><td class="cfg">cursor/bugbot/default <span class="badge">manual·standard-v1</span></td><td>3</td><td>89%</td><td>83%–92%</td><td>0.0</td><td>4.3</td><td>—s</td><td>—</td><td>—</td></tr>
+<tr><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>3</td><td>100%</td><td>100%–100%</td><td>0.0</td><td>8.0</td><td>62.1s</td><td>8,960</td><td>$0.2305</td></tr>
+</tbody></table>
+<table><thead><tr><th>Bug</th><th>claude-opus-4-8<br>low</th><th>claude-opus-4-8<br>medium</th><th>claude-opus-4-8<br>high</th><th>claude-opus-4-8<br>xhigh</th><th>claude-opus-4-8<br>max</th><th>gpt-5.5<br>low</th><th>gpt-5.5<br>medium</th><th>gpt-5.5<br>high</th><th>gpt-5.5<br>xhigh</th><th>bugbot<br>default</th><th>composer-2.5-fast<br>default</th></tr></thead><tbody>
+<tr><td class="bug">C1 · critical · SQL injection</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">C2 · critical · OS command injection</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">C3 · critical · Insecure deserialization (pickle)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H1 · high · Path traversal</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H2 · high · Weak password hashing (unsalted MD5)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H3 · high · Broken access control (IDOR)</td><td class="part">1/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M1 · medium · Race condition / TOCTOU on transfer</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M2 · medium · Floating-point money arithmetic</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="part">1/3</td><td class="part">2/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="no">0/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M3 · medium · Off-by-one in pagination</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L1 · low · Mutable default argument</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L2 · low · Overly-broad except swallowing errors</td><td class="no">0/3</td><td class="part">2/3</td><td class="no">0/3</td><td class="part">1/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="part">1/3</td><td class="no">0/3</td><td class="part">2/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L3 · low · Identity vs equality (is)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+</tbody></table>
+<h2>python-pricing</h2>
+<h3>🏆 Leaderboard</h3>
+<table class="metrics"><thead><tr><th>#</th><th>Config</th><th>Recall</th><th>FP</th><th>$/run</th><th>Speed</th></tr></thead><tbody>
+<tr><td>🥇</td><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>94%</td><td>0.0</td><td>$0.1343</td><td>36s</td></tr>
+<tr><td>🥈</td><td class="cfg">claude/claude-opus-4-8/low</td><td>92%</td><td>0.0</td><td>$0.2296</td><td>46s</td></tr>
+<tr><td>🥉</td><td class="cfg">claude/claude-opus-4-8/max</td><td>92%</td><td>0.0</td><td>$0.9285</td><td>276s</td></tr>
+<tr><td>4</td><td class="cfg">cursor/bugbot/default <span class="badge">manual</span></td><td>92%</td><td>0.0</td><td>—</td><td>—</td></tr>
+<tr><td>5</td><td class="cfg">codex/gpt-5.5/medium</td><td>89%</td><td>0.3</td><td>$0.2735</td><td>118s</td></tr>
+<tr><td>6</td><td class="cfg">claude/claude-opus-4-8/medium</td><td>89%</td><td>0.0</td><td>$0.2784</td><td>55s</td></tr>
+<tr><td>7</td><td class="cfg">claude/claude-opus-4-8/high</td><td>89%</td><td>0.0</td><td>$0.3060</td><td>66s</td></tr>
+<tr><td>8</td><td class="cfg">claude/claude-opus-4-8/xhigh</td><td>86%</td><td>0.0</td><td>$0.4811</td><td>154s</td></tr>
+<tr><td>9</td><td class="cfg">codex/gpt-5.5/low</td><td>83%</td><td>0.0</td><td>$0.2698</td><td>87s</td></tr>
+<tr><td>10</td><td class="cfg">codex/gpt-5.5/high</td><td>83%</td><td>0.0</td><td>$0.3374</td><td>137s</td></tr>
+<tr><td>11</td><td class="cfg">codex/gpt-5.5/xhigh</td><td>83%</td><td>0.0</td><td>$0.5591</td><td>232s</td></tr>
+</tbody></table>
+<h3>Metrics</h3>
+<table class="metrics"><thead><tr><th>Config</th><th>Runs</th><th>Recall mean</th><th>min–max</th><th>FP</th><th>Bonus</th><th>Speed</th><th>Out-tok</th><th>Est. $</th></tr></thead><tbody>
+<tr><td class="cfg">claude/claude-opus-4-8/low</td><td>3</td><td>92%</td><td>92%–92%</td><td>0.0</td><td>1.3</td><td>45.9s</td><td>3,125</td><td>$0.2296</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/medium</td><td>3</td><td>89%</td><td>83%–92%</td><td>0.0</td><td>1.3</td><td>54.6s</td><td>3,897</td><td>$0.2784</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/high</td><td>3</td><td>89%</td><td>83%–92%</td><td>0.0</td><td>1.3</td><td>66.0s</td><td>4,986</td><td>$0.3060</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/xhigh</td><td>3</td><td>86%</td><td>83%–92%</td><td>0.0</td><td>1.0</td><td>153.5s</td><td>11,802</td><td>$0.4811</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/max</td><td>3</td><td>92%</td><td>92%–92%</td><td>0.0</td><td>2.0</td><td>276.1s</td><td>20,423</td><td>$0.9285</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/low</td><td>3</td><td>83%</td><td>75%–92%</td><td>0.0</td><td>1.0</td><td>86.8s</td><td>3,256</td><td>$0.2698</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/medium</td><td>3</td><td>89%</td><td>83%–92%</td><td>0.3</td><td>0.7</td><td>117.9s</td><td>4,583</td><td>$0.2735</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/high</td><td>3</td><td>83%</td><td>83%–83%</td><td>0.0</td><td>0.0</td><td>136.7s</td><td>5,823</td><td>$0.3374</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/xhigh</td><td>3</td><td>83%</td><td>83%–83%</td><td>0.0</td><td>0.7</td><td>231.5s</td><td>10,929</td><td>$0.5591</td></tr>
+<tr><td class="cfg">cursor/bugbot/default <span class="badge">manual·standard-v1</span></td><td>3</td><td>92%</td><td>92%–92%</td><td>0.0</td><td>1.3</td><td>—s</td><td>—</td><td>—</td></tr>
+<tr><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>3</td><td>94%</td><td>92%–100%</td><td>0.0</td><td>2.7</td><td>36.2s</td><td>5,938</td><td>$0.1343</td></tr>
+</tbody></table>
+<table><thead><tr><th>Bug</th><th>claude-opus-4-8<br>low</th><th>claude-opus-4-8<br>medium</th><th>claude-opus-4-8<br>high</th><th>claude-opus-4-8<br>xhigh</th><th>claude-opus-4-8<br>max</th><th>gpt-5.5<br>low</th><th>gpt-5.5<br>medium</th><th>gpt-5.5<br>high</th><th>gpt-5.5<br>xhigh</th><th>bugbot<br>default</th><th>composer-2.5-fast<br>default</th></tr></thead><tbody>
+<tr><td class="bug">C1 · critical · Discount percent not clamped: percent &gt; 1 yields a negative price</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="part">1/3</td></tr>
+<tr><td class="bug">C2 · critical · Per-order coupon subtracted on every line item (multi-line over-discount)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">C3 · critical · Tax computed on the pre-discount subtotal (wrong tax base)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H1 · high · Refund returns float money from division instead of rounded integer cents</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H2 · high · Proration hardcodes /30 and ignores the days_in_month argument</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H3 · high · Tier boundary off-by-one: quantity at a tier&#x27;s max falls into the next tier</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M1 · medium · pct truncates the fractional cent instead of rounding half-up</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M2 · medium · stack applies the second discount to the original subtotal, not the already-discounted amount</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M3 · medium · allocate drops the remainder when splitting an order discount (integer division)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L1 · low · Loyalty threshold uses &gt; instead of &gt;= (spend exactly at a threshold misqualified)</td><td class="ok">3/3</td><td class="part">2/3</td><td class="part">2/3</td><td class="part">1/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L2 · low · to_dollars uses integer // 100 and truncates the cents part</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L3 · low · average_line divides by len with no guard for empty input (ZeroDivisionError)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="part">1/3</td><td class="part">2/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+</tbody></table>
+<h2>python-scheduling</h2>
+<h3>🏆 Leaderboard</h3>
+<table class="metrics"><thead><tr><th>#</th><th>Config</th><th>Recall</th><th>FP</th><th>$/run</th><th>Speed</th></tr></thead><tbody>
+<tr><td>🥇</td><td class="cfg">claude/claude-opus-4-8/high</td><td>100%</td><td>0.0</td><td>$0.2569</td><td>59s</td></tr>
+<tr><td>🥈</td><td class="cfg">claude/claude-opus-4-8/xhigh</td><td>100%</td><td>0.0</td><td>$0.4444</td><td>126s</td></tr>
+<tr><td>🥉</td><td class="cfg">codex/gpt-5.5/low</td><td>97%</td><td>0.3</td><td>$0.1715</td><td>72s</td></tr>
+<tr><td>4</td><td class="cfg">claude/claude-opus-4-8/max</td><td>97%</td><td>0.0</td><td>$0.6618</td><td>197s</td></tr>
+<tr><td>5</td><td class="cfg">claude/claude-opus-4-8/medium</td><td>94%</td><td>0.0</td><td>$0.2460</td><td>56s</td></tr>
+<tr><td>6</td><td class="cfg">cursor/bugbot/default <span class="badge">manual</span></td><td>94%</td><td>0.0</td><td>—</td><td>—</td></tr>
+<tr><td>7</td><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>92%</td><td>0.0</td><td>$0.2117</td><td>59s</td></tr>
+<tr><td>8</td><td class="cfg">claude/claude-opus-4-8/low</td><td>92%</td><td>0.0</td><td>$0.2274</td><td>45s</td></tr>
+<tr><td>9</td><td class="cfg">codex/gpt-5.5/medium</td><td>89%</td><td>0.0</td><td>$0.2199</td><td>97s</td></tr>
+<tr><td>10</td><td class="cfg">codex/gpt-5.5/xhigh</td><td>89%</td><td>0.0</td><td>$0.4486</td><td>467s</td></tr>
+<tr><td>11</td><td class="cfg">codex/gpt-5.5/high</td><td>86%</td><td>0.0</td><td>$0.2716</td><td>126s</td></tr>
+</tbody></table>
+<h3>Metrics</h3>
+<table class="metrics"><thead><tr><th>Config</th><th>Runs</th><th>Recall mean</th><th>min–max</th><th>FP</th><th>Bonus</th><th>Speed</th><th>Out-tok</th><th>Est. $</th></tr></thead><tbody>
+<tr><td class="cfg">claude/claude-opus-4-8/low</td><td>3</td><td>92%</td><td>92%–92%</td><td>0.0</td><td>0.0</td><td>44.8s</td><td>3,149</td><td>$0.2274</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/medium</td><td>3</td><td>94%</td><td>83%–100%</td><td>0.0</td><td>0.0</td><td>55.6s</td><td>4,136</td><td>$0.2460</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/high</td><td>3</td><td>100%</td><td>100%–100%</td><td>0.0</td><td>0.7</td><td>58.8s</td><td>4,268</td><td>$0.2569</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/xhigh</td><td>3</td><td>100%</td><td>100%–100%</td><td>0.0</td><td>1.0</td><td>126.5s</td><td>9,850</td><td>$0.4444</td></tr>
+<tr><td class="cfg">claude/claude-opus-4-8/max</td><td>3</td><td>97%</td><td>92%–100%</td><td>0.0</td><td>0.7</td><td>196.9s</td><td>14,501</td><td>$0.6618</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/low</td><td>3</td><td>97%</td><td>92%–100%</td><td>0.3</td><td>1.7</td><td>71.7s</td><td>2,608</td><td>$0.1715</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/medium</td><td>3</td><td>89%</td><td>83%–92%</td><td>0.0</td><td>2.3</td><td>96.8s</td><td>3,818</td><td>$0.2199</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/high</td><td>3</td><td>86%</td><td>83%–92%</td><td>0.0</td><td>1.3</td><td>125.9s</td><td>5,552</td><td>$0.2716</td></tr>
+<tr><td class="cfg">codex/gpt-5.5/xhigh</td><td>3</td><td>89%</td><td>83%–92%</td><td>0.0</td><td>2.7</td><td>467.5s</td><td>9,330</td><td>$0.4486</td></tr>
+<tr><td class="cfg">cursor/bugbot/default <span class="badge">manual·standard-v1</span></td><td>3</td><td>94%</td><td>92%–100%</td><td>0.0</td><td>1.7</td><td>—s</td><td>—</td><td>—</td></tr>
+<tr><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>3</td><td>92%</td><td>83%–100%</td><td>0.0</td><td>1.7</td><td>59.2s</td><td>8,568</td><td>$0.2117</td></tr>
+</tbody></table>
+<table><thead><tr><th>Bug</th><th>claude-opus-4-8<br>low</th><th>claude-opus-4-8<br>medium</th><th>claude-opus-4-8<br>high</th><th>claude-opus-4-8<br>xhigh</th><th>claude-opus-4-8<br>max</th><th>gpt-5.5<br>low</th><th>gpt-5.5<br>medium</th><th>gpt-5.5<br>high</th><th>gpt-5.5<br>xhigh</th><th>bugbot<br>default</th><th>composer-2.5-fast<br>default</th></tr></thead><tbody>
+<tr><td class="bug">C1 · critical · overlaps() only checks one direction, so real overlaps are missed → double-booking</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">C2 · critical · has_conflict skips bookings on a different calendar date → misses midnight-spanning conflicts</td><td class="ok">3/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">C3 · critical · is_past compares a local-naive time against datetime.utcnow() → off by the UTC offset</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H1 · high · duration_minutes uses timedelta.seconds (ignores .days) → wrong for intervals ≥ 24h</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H2 · high · weekly() uses range(1, count+1), excluding the start date it documents as inclusive</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H3 · high · free_slots uses `t &lt;= day_end`, emitting a slot starting at/after the day end (off-by-one)</td><td class="no">0/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="part">1/3</td><td class="part">2/3</td></tr>
+<tr><td class="bug">M1 · medium · parse_hhmm does not validate ranges (accepts hour&gt;23 / minute&gt;59)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M2 · medium · next_available treats a time touching a booking&#x27;s end as busy (`&lt;=`) → skips a valid slot</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="part">2/3</td><td class="part">2/3</td><td class="part">2/3</td><td class="ok">3/3</td><td class="part">1/3</td></tr>
+<tr><td class="bug">M3 · medium · monthly() adds timedelta(days=30) per step → drifts off the intended day of month</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L1 · low · first_booking returns the first-inserted booking, not the earliest by start time</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L2 · low · Interval.contains uses `&lt;= when &lt;=` (inclusive end); a time at the interval end is wrongly reported inside</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L3 · low · busiest_hour calls max() on an empty schedule → ValueError</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="part">2/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
+</tbody></table></body></html>
