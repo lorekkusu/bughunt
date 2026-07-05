@@ -1,20 +1,23 @@
 # bughunt — results
 
 An informal, honest benchmark of AI code-review tools. Each project hides a known
-set of planted bugs; every tool gets the **same standard prompt** and is scored by
-an **LLM-as-judge** (Claude Opus, headless) against the answer key. Recall = planted
-bugs found. FP = false positives per run. Costs are **API-equivalent estimates**
-(what the measured tokens would cost on the API), not actual subscription spend.
-Default **3 runs** per config; a bug counts by stability (found every run / some /
-never). See `harness/` for how to reproduce.
+set of planted bugs, and every tool is scored by an **LLM-as-judge** (Claude Opus,
+headless) against the answer key. Recall = planted bugs found. FP = false positives
+per run. Costs are **API-equivalent estimates** (what the measured tokens would cost
+on the API), not actual subscription spend. Default **3 runs** per config; a bug
+counts by stability (found every run / some / never). See `harness/` for how to
+reproduce.
 
 **Subjects:** codex `gpt-5.5` (efforts low→xhigh), claude `opus-4.8` (low→max),
-cursor-agent `composer-2.5-fast`, and cursor **bugbot** (run manually, scored via
-`bench judge`). 30 automated configs × 3 runs + bugbot × 3 projects.
+cursor-agent `composer-2.5-fast`, cursor **bugbot** (run manually), and
+**CodeRabbit** CLI. The coding models and Bugbot share one **standard prompt**;
+CodeRabbit runs its own review engine (marked `native`, and it reports no tokens so
+it has speed but no cost). 30 automated model configs × 3 runs, plus Bugbot and
+CodeRabbit × 3 projects.
 
 > Caveats: small, fully-readable projects; a single LLM judge; one language (Python)
-> so far; costs are list-price estimates, not billed spend. Treat as a directional
-> signal, not gospel.
+> so far; `native` tools aren't directly comparable on the prompt axis; costs are
+> list-price estimates, not billed spend. Treat as a directional signal, not gospel.
 
 ---
 
@@ -32,6 +35,7 @@ broad-except, `is` vs `==`.
 | | codex gpt-5.5 `low` / `medium` | 89% | 0.3–0.7 | $0.19–0.23 |
 | | cursor bugbot ⟨manual⟩ | 89% | 0.0 | — |
 | | claude opus-4.8 (best: `medium`) | 86% | 0.0 | $0.25 |
+| | coderabbit `cli` ⟨native⟩ | 83% | 0.0 | — |
 | | claude opus-4.8 `low` | 78% | 0.7 | $0.21 |
 
 **Findings:** near-saturated at the top — the famous vulnerabilities (SQLi, command
@@ -41,7 +45,9 @@ everyone. The whole spread comes from two **non-flashy** bugs: **float-for-money
 codex needed `high`+ to lock it) and **broad-except** (only composer got it 3/3;
 most configs never did). Effort plateaus or inverts — codex peaks at `high` (94%)
 and *drops* at `xhigh` (92%, and picks up 1.3 FP). composer reaches 100% for $0.23
-while opus can't clear 86% even at `max` ($0.67).
+while opus can't clear 86% even at `max` ($0.67). **CodeRabbit**, the one
+purpose-built reviewer, lands at 83% (2nd from bottom) — though it flags the most
+*extra* real issues of anyone (bonus 6.7), so it's thorough but not accurate.
 
 ---
 
@@ -62,23 +68,23 @@ empty-input crash.
 | | codex gpt-5.5 `medium` | 89% | 0.3 | $0.27 |
 | | claude opus-4.8 `medium` / `high` | 89% | 0.0 | $0.28–0.31 |
 | | codex gpt-5.5 `low` / `high` / `xhigh` | 83% | 0.0 | $0.27–0.56 |
+| | coderabbit `cli` ⟨native⟩ | 75% | 0.3 | — |
 
 **Findings:**
 
 1. **One bug beats everybody.** The unclamped discount that yields a *negative
-   price* (C1) was missed **0/3 by every codex and every opus config**; only
-   composer caught it, and only 1/3. It's the single hardest item in the suite —
-   plausibly because "should this function validate its input?" is a judgment call,
-   not a mechanical defect.
+   price* (C1) was missed **0/3 by every codex and every opus config**, by Bugbot,
+   and by CodeRabbit; only composer caught it, and only 1/3. It's the single hardest
+   item in the suite — plausibly because "should this function validate its input?"
+   is a judgment call, not a mechanical defect.
 2. **Effort barely moves it — and isn't monotonic.** codex is 83% at `low`,
    `high`, and `xhigh` (with a 89% blip at `medium`); opus `low` (92%) *ties* opus
    `max` (92%) — for **4× the cost** ($0.23 vs $0.93). Reasoning depth buys nothing here.
 3. **codex has a crash blind spot.** The empty-input `ZeroDivisionError` (L3) it
    caught at `low`/`medium` but **missed 0/3 at `high` and `xhigh`** — more effort,
    fewer catches.
-4. **Reachability matters.** The `pct` truncation bug (M1) was dead code in an
-   earlier draft; after wiring it onto the live invoice path it's now caught 3/3 by
-   nearly everyone — a fair, observable bug rather than a phantom.
+4. **CodeRabbit comes last** (75%) — the specialist reviewer is out-recalled by
+   every general model configuration on the subtle-money project.
 
 ---
 
@@ -98,6 +104,7 @@ free-slot, no range validation, touching-end busy, 30-day "months", insertion-or
 | | cursor bugbot ⟨manual⟩ | 94% | 0.0 | — |
 | | composer-2.5-fast | 92% | 0.0 | $0.21 |
 | | codex gpt-5.5 `high` | 86% | 0.0 | $0.27 |
+| | coderabbit `cli` ⟨native⟩ | 67% | 0.0 | — |
 
 **Findings:** the one project where **opus leads** — and the one where **effort
 actually helps**, but only up to `high` (low 92% → high 100%), then plateaus and
@@ -106,6 +113,7 @@ dips at `max` (97%). For codex it *inverts hard*: `low` scores **97% at $0.17 in
 codex also has a blind spot on the empty-schedule crash (L3): 0/3 at `medium`,
 `high`, and `xhigh`, while opus, composer, and bugbot all catch it. The trailing
 free-slot off-by-one (H3) is flaky for everyone — the genuine coin-flip of the set.
+**CodeRabbit is last by a clear margin (67%)** — nearly 20 points below the field.
 
 ---
 
@@ -114,10 +122,16 @@ free-slot off-by-one (H3) is flaky for everyone — the genuine coin-flip of the
 - **composer-2.5-fast is the value standout** — 🥇 on basic and pricing, mid-pack on
   scheduling (92%), **0.0 false positives on all three projects**, at $0.13–0.23/run. On
   this evidence it's the pick for routine bug-finding, and remarkable for its price.
+- **The purpose-built review products don't win.** CodeRabbit — a dedicated AI code
+  reviewer — lands last or 2nd-from-last on all three (83 / 75 / 67%), and Bugbot,
+  though clean, never tops a project either. The general coding models and agents
+  out-recall the specialist tools. And because the whole (small) project is in front
+  of every tool, this is a **reasoning gap, not a retrieval one** — a tool that
+  misses a bug it can fully see won't do *better* on a larger codebase, only worse.
 - **bugbot is the precision play** — never wins a project (89 / 92 / 94%) but
-  **never adds a single false positive**, and its extras are real (it flags genuine
-  nits the answer key pre-accepts). If a noisy reviewer is worse than a quiet one
-  for your workflow, that profile matters more than raw recall.
+  **never adds a single false positive**, and its extras are real. If a noisy
+  reviewer is worse than a quiet one for your workflow, that profile matters more
+  than raw recall. (CodeRabbit is the opposite trade: more extras, lower recall.)
 - **No model wins everywhere.** composer takes the two correctness-heavy projects;
   opus owns date/time. Match the tool to the domain.
 - **Effort ≠ care, and often ≠ value.** Higher reasoning effort helped only on
@@ -133,8 +147,8 @@ free-slot off-by-one (H3) is flaky for everyone — the genuine coin-flip of the
   negative, a swallowed exception, a float where cents belong.
 - **False positives stayed rare and small.** Almost every FP > 0 came from codex —
   spread across `low`, `medium`, and `xhigh` (up to 1.3 on basic `xhigh`), not
-  clustered at any one tier — plus a single opus `low` run (0.7 on basic). composer
-  and bugbot never produced one across all three projects.
+  clustered at any one tier — plus a single opus `low` run and one CodeRabbit
+  pricing run (0.3). composer and bugbot never produced one across all three projects.
 
 Method, provenance, and how to add tools/projects: `harness/docs/` and
 `harness/REFERENCES.md`. Full per-bug tables: `harness/reports/summary.md`.

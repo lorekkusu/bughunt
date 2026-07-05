@@ -3,6 +3,7 @@
 from .base import Provider, ReviewResult
 from .claude import ClaudeProvider
 from .codex import CodexProvider
+from .coderabbit import CodeRabbitProvider
 from .cursor_agent import CursorAgentProvider
 
 # Registry: provider name -> adapter class. Add new tools here.
@@ -10,6 +11,7 @@ REGISTRY: dict[str, type[Provider]] = {
     CodexProvider.name: CodexProvider,
     ClaudeProvider.name: ClaudeProvider,
     CursorAgentProvider.name: CursorAgentProvider,
+    CodeRabbitProvider.name: CodeRabbitProvider,
 }
 
 

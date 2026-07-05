@@ -55,6 +55,7 @@ class ConfigResult:
     rounds: list[RoundResult]
     skipped: bool = False
     manual: bool = False           # produced by a human-triggered tool via `bench judge`
+    all_failed: bool = False       # every round errored (e.g. rate-limited) — not persisted
 
     # ---- derived ----
     @property
@@ -190,6 +191,7 @@ def run_config(
     force: bool = False,
     keep_scratch: bool = False,
     on_round=None,
+    prompt_id: str | None = None,
 ) -> ConfigResult:
     project = cfg.project(project_name)
     src = cfg.projects_dir / project["path"]
@@ -237,10 +239,23 @@ def run_config(
 
     result = ConfigResult(
         project=project_name, provider=provider_name, model=model, effort=effort,
-        prompt_id=cfg.prompt_id, judge_model=judge_model, code_hash=code_hash,
+        prompt_id=prompt_id or cfg.prompt_id, judge_model=judge_model, code_hash=code_hash,
         runs=runs, created=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         planted=manifest.get("planted_bugs", []), rounds=rounds,
     )
+    # An errored round (e.g. a rate-limited or crashed tool) is not a real 0%
+    # score, so it must not count. Drop failed rounds; keep only the good ones.
+    good = [r for r in rounds if r.returncode == 0]
+    if not good:
+        # Every round failed — don't persist (would pollute the leaderboard with a
+        # fake 0%). The printed table still shows the failure; leaving the file
+        # unwritten means the next run simply re-attempts it.
+        result.all_failed = True
+        return result
+    # Persist only the good rounds. If some failed, the saved run-count is lower
+    # than requested, so a later `bench run` re-attempts to top it up.
+    result.rounds = good
+    result.runs = len(good)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result.to_dict(), indent=2), encoding="utf-8")
     return result

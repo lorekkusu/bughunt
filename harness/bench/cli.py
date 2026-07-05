@@ -99,11 +99,15 @@ def run(
                 cfg, project, provider, mo, ef, runs, prompt, pricing,
                 judge_model=judge_model, force=force, keep_scratch=keep_scratch,
                 on_round=None if no_interactive else on_round,
+                prompt_id="native" if pcfg.get("native") else cfg.prompt_id,
             )
         if result.skipped:
             console.print("[dim]cached (same code + enough runs) — use --force to re-run[/]")
+        if getattr(result, "all_failed", False):
+            console.print("[red]all rounds errored (e.g. rate limit) — NOT saved; re-run later[/]")
         report.print_summary(result)
-        report.write_markdown(result, cfg.reports_dir)
+        if not getattr(result, "all_failed", False):
+            report.write_markdown(result, cfg.reports_dir)
         console.print()
 
     summary_mod.write_markdown(cfg)

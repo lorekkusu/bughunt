@@ -1,0 +1,224 @@
+{
+  "project": "python-pricing",
+  "provider": "coderabbit",
+  "model": "cli",
+  "effort": "default",
+  "prompt_id": "native",
+  "judge_model": "opus",
+  "code_hash": "a9f8b2065c7c",
+  "runs": 3,
+  "created": "2026-07-05 01:06:32",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "Discount percent not clamped: percent > 1 yields a negative price",
+      "file": "src/pricing/discount.py",
+      "symbol": "apply_percent"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "Per-order coupon subtracted on every line item (multi-line over-discount)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "build"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Tax computed on the pre-discount subtotal (wrong tax base)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "build"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Refund returns float money from division instead of rounded integer cents",
+      "file": "src/pricing/refund.py",
+      "symbol": "refund_amount"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Proration hardcodes /30 and ignores the days_in_month argument",
+      "file": "src/pricing/proration.py",
+      "symbol": "prorate"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Tier boundary off-by-one: quantity at a tier's max falls into the next tier",
+      "file": "src/pricing/catalog.py",
+      "symbol": "unit_price"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "pct truncates the fractional cent instead of rounding half-up",
+      "file": "src/pricing/money.py",
+      "symbol": "pct"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "stack applies the second discount to the original subtotal, not the already-discounted amount",
+      "file": "src/pricing/discount.py",
+      "symbol": "stack"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "allocate drops the remainder when splitting an order discount (integer division)",
+      "file": "src/pricing/discount.py",
+      "symbol": "allocate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Loyalty threshold uses > instead of >= (spend exactly at a threshold misqualified)",
+      "file": "src/pricing/loyalty.py",
+      "symbol": "multiplier"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "to_dollars uses integer // 100 and truncates the cents part",
+      "file": "src/pricing/invoice.py",
+      "symbol": "to_dollars"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "average_line divides by len with no guard for empty input (ZeroDivisionError)",
+      "file": "src/pricing/invoice.py",
+      "symbol": "average_line"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M2",
+        "M3",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 0,
+      "elapsed_s": 179.5,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": []
+    },
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
+        "M3",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 0,
+      "elapsed_s": 165.1,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": []
+    },
+    {
+      "found": [
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M2",
+        "M3",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 1,
+      "bonus": 1,
+      "elapsed_s": 194.2,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [
+        {
+          "noise_id": null,
+          "evidence": "Finding 6: tax_for currently rounds and returns tax for any inputs, including negative amount or rate values. Add input validation... raise an appropriate error"
+        }
+      ],
+      "bonus_items": [
+        {
+          "title": "refund_amount ZeroDivisionError when days_total == 0",
+          "evidence": "Finding 5: needs a guard for days_total == 0 to avoid a runtime ZeroDivisionError"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 0,
+    "C2": 3,
+    "C3": 3,
+    "H1": 3,
+    "H2": 3,
+    "H3": 1,
+    "M1": 3,
+    "M2": 3,
+    "M3": 3,
+    "L1": 0,
+    "L2": 3,
+    "L3": 2
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.75,
+      "min": 0.6666666666666666,
+      "max": 0.8333333333333334
+    },
+    "false_positives": {
+      "mean": 0.3333333333333333,
+      "min": 0,
+      "max": 1
+    },
+    "bonus": {
+      "mean": 0.3333333333333333,
+      "min": 0,
+      "max": 1
+    },
+    "elapsed_s": {
+      "mean": 179.6,
+      "min": 165.1,
+      "max": 194.2
+    },
+    "output_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "total_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "cost_usd": {
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  }
+}

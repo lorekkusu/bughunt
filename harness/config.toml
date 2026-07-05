@@ -63,6 +63,15 @@ efforts        = ["default"]
 default_model  = "composer-2.5-fast"
 default_effort = "default"
 
+[providers.coderabbit]
+manual         = false
+native         = true
+instructions   = "Automated (native prompt). `bench run --provider coderabbit`. Reviews a git DIFF, not a working tree: the adapter turns the disposable copy into a one-commit repo on an empty base and runs `coderabbit review --base <empty> --agent --type all`. Uses CodeRabbit's OWN engine (does NOT take review_prompt.md), so results are labelled `native`. Needs `git` + `coderabbit auth` login; reports no tokens (speed only, no cost). Free accounts work but consume a per-account CLI allowance and may rate-limit."
+models         = ["cli"]
+efforts        = ["default"]
+default_model  = "cli"
+default_effort = "default"
+
 [providers.cursor]
 manual         = true
 native         = false

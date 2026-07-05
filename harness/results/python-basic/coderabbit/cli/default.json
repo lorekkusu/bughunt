@@ -1,0 +1,300 @@
+{
+  "project": "python-basic",
+  "provider": "coderabbit",
+  "model": "cli",
+  "effort": "default",
+  "prompt_id": "native",
+  "judge_model": "opus",
+  "code_hash": "e0072cdb0df6",
+  "runs": 3,
+  "created": "2026-07-05 06:17:09",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "title": "SQL injection",
+      "file": "src/vault_api/db.py",
+      "symbol": "find_user_by_name"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "title": "OS command injection",
+      "file": "src/vault_api/tasks.py",
+      "symbol": "ping_host"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "title": "Insecure deserialization (pickle)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "load_session"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "title": "Path traversal",
+      "file": "src/vault_api/files.py",
+      "symbol": "read_user_file"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "title": "Weak password hashing (unsalted MD5)",
+      "file": "src/vault_api/auth.py",
+      "symbol": "hash_password"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "title": "Broken access control (IDOR)",
+      "file": "src/vault_api/app.py",
+      "symbol": "account"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "title": "Race condition / TOCTOU on transfer",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "title": "Floating-point money arithmetic",
+      "file": "src/vault_api/banking.py",
+      "symbol": "transfer/apply_interest"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "title": "Off-by-one in pagination",
+      "file": "src/vault_api/utils.py",
+      "symbol": "paginate"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "title": "Mutable default argument",
+      "file": "src/vault_api/utils.py",
+      "symbol": "add_tag"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "title": "Overly-broad except swallowing errors",
+      "file": "src/vault_api/config_loader.py",
+      "symbol": "load_config"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "title": "Identity vs equality (is)",
+      "file": "src/vault_api/utils.py",
+      "symbol": "is_active"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H2",
+        "H3",
+        "M2",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 8,
+      "elapsed_s": 219.1,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Non-dict YAML crashes config merge",
+          "evidence": "merged.update(data) is called without verifying the parsed value type ... crash on valid YAML that is not a mapping"
+        },
+        {
+          "title": "SQLite foreign keys not enforced",
+          "evidence": "Enable SQLite foreign-key enforcement on each new connection ... PRAGMA foreign_keys is turned on"
+        },
+        {
+          "title": "Hardcoded SECRET_KEY",
+          "evidence": "The SECRET_KEY definition in auth.py is hardcoded and should be sourced from the environment instead"
+        },
+        {
+          "title": "Non-constant-time password comparison",
+          "evidence": "verify_password currently uses a normal equality check, which can leak timing information"
+        },
+        {
+          "title": "Self-transfer mints funds",
+          "evidence": "transfer function ... allows self-transfers to mint funds because transfer computes source and destination balances from the same account snapshot"
+        },
+        {
+          "title": "Negative transfer amount not rejected",
+          "evidence": "lets negative amounts bypass the src[\"balance\"] < amount guard and invert the transfer direction"
+        },
+        {
+          "title": "/transfer endpoint lacks auth/ownership checks",
+          "evidence": "do_transfer currently accepts arbitrary from/to/amount values with no auth or ownership checks"
+        },
+        {
+          "title": "login KeyError on missing fields",
+          "evidence": "login handler ... indexes body[\"username\"] and body[\"password\"] directly, which can raise KeyError and turn malformed requests into 500s"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "M1",
+        "M2",
+        "M3",
+        "L1",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 7,
+      "elapsed_s": 215.5,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Hardcoded SECRET_KEY",
+          "evidence": "The SECRET_KEY in the auth module is hardcoded instead of being sourced from the environment"
+        },
+        {
+          "title": "update_balance ignores rowcount (silent no-op on missing account)",
+          "evidence": "update_balance function currently ignores whether the UPDATE matched any rows, so a missing account_id is treated as success"
+        },
+        {
+          "title": "transfer allows non-positive amounts",
+          "evidence": "negative or zero values can bypass the existing insufficient-funds logic and invert the transfer direction"
+        },
+        {
+          "title": "login handler unvalidated JSON body",
+          "evidence": "assuming request.get_json(force=True) always returns a dict... can raise an unhandled error on missing or malformed input"
+        },
+        {
+          "title": "config merge fails on non-mapping YAML",
+          "evidence": "check that the parsed YAML result is a mapping before calling merged.update(data)"
+        },
+        {
+          "title": "SQLite foreign keys not enforced",
+          "evidence": "Enable foreign key enforcement on every SQLite connection created by get_conn so accounts cannot become orphaned"
+        },
+        {
+          "title": "config.yaml not gitignored",
+          "evidence": ".gitignore currently omits config.yaml, so local configuration copied from config.example.yaml can be committed by accident"
+        }
+      ]
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M3",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 5,
+      "elapsed_s": 203.7,
+      "usage": null,
+      "cost_usd": null,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Non-constant-time password hash comparison",
+          "evidence": "compares hashes with a normal equality check, which can leak timing information ... use hmac.compare_digest"
+        },
+        {
+          "title": "Hardcoded SECRET_KEY committed literal",
+          "evidence": "SECRET_KEY in auth.py is currently a committed literal ... read from the environment instead of being hardcoded"
+        },
+        {
+          "title": "Missing non-positive amount guard in transfer",
+          "evidence": "reject amount values that are less than or equal to zero ... transfer cannot be inverted by a negative or zero amount"
+        },
+        {
+          "title": "Missing auth/ownership check on /transfer endpoint",
+          "evidence": "do_transfer currently allows anonymous callers to move money from any source account"
+        },
+        {
+          "title": "config.yaml tracked / sqlite sidecars not ignored",
+          "evidence": "config.yaml is still tracked and vault.db does not cover its companion files"
+        }
+      ]
+    }
+  ],
+  "per_bug": {
+    "C1": 3,
+    "C2": 3,
+    "C3": 3,
+    "H1": 2,
+    "H2": 3,
+    "H3": 2,
+    "M1": 1,
+    "M2": 2,
+    "M3": 3,
+    "L1": 3,
+    "L2": 2,
+    "L3": 3
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.8333333333333334,
+      "min": 0.8333333333333334,
+      "max": 0.8333333333333334
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 6.666666666666667,
+      "min": 5,
+      "max": 8
+    },
+    "elapsed_s": {
+      "mean": 212.76666666666665,
+      "min": 203.7,
+      "max": 219.1
+    },
+    "output_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "total_tokens": {
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "cost_usd": {
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  }
+}
