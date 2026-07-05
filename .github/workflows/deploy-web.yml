@@ -44,9 +44,10 @@ jobs:
       - name: Build (data derived from harness/config.toml + results + RESULTS.md)
         run: pnpm build
         env:
-          # GitHub Pages project site lives under /<repo>. Change or clear this
-          # if you deploy to a user/org site or a custom domain.
-          BASE_PATH: /${{ github.event.repository.name }}
+          # Served at the root of the custom domain (report.bughunt.sh), so no
+          # base path. For a project site under /<repo>, set this to
+          # /${{ github.event.repository.name }} instead.
+          BASE_PATH: ''
       - uses: actions/upload-pages-artifact@v5
         with:
           path: web/build
