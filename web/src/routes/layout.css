@@ -1,0 +1,233 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+/* Tool hues (--tool-<id>, light + dark) generated from harness/config.toml. */
+@import '../lib/generated/palette.css';
+
+/* Casefile — dark & light are designed from the ramps, not auto-flipped.
+   Palette is CVD-validated (see web/DESIGN.md). Tool hues are fixed per entity
+   and never repainted by rank. */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--font-sans: 'Geist Variable', Inter, system-ui, sans-serif;
+	--font-mono: 'Geist Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+
+	/* Surfaces & ink → resolve to the runtime vars below so they swap with .dark */
+	--color-surface: var(--surface);
+	--color-plane: var(--plane);
+	--color-raised: var(--raised);
+	--color-ink: var(--ink);
+	--color-ink-2: var(--ink-2);
+	--color-muted: var(--muted);
+	--color-hairline: var(--hairline);
+
+	/* Tool hues are per-model and generated (var(--tool-<modelSlug>)); the site
+	   references them dynamically, so there are no fixed tool aliases here. */
+
+	/* Sequential recall ramp (3-step ordinal, always paired with a glyph) */
+	--color-seq-never: var(--seq-never);
+	--color-seq-some: var(--seq-some);
+	--color-seq-every: var(--seq-every);
+
+	/* Reserved status (icon + label always; never a 6th tool hue) */
+	--color-good: var(--good);
+	--color-warn: var(--warn);
+	--color-serious: var(--serious);
+	--color-critical: var(--critical);
+}
+
+/* ---- Light (default surface #fbfaf8) ---- */
+:root {
+	--surface: #fbfaf8;
+	--plane: #f7f6f3;
+	--raised: #ffffff;
+	--ink: #16150f;
+	--ink-2: #57544c;
+	--muted: #8a877e;
+	--hairline: #e4e1d8;
+
+	--seq-never: #e8eef7;
+	--seq-some: #6da7ec;
+	--seq-every: #1c5cab;
+
+	--good: #0ca30c;
+	--warn: #fab219;
+	--serious: #ec835a;
+	--critical: #d03b3b;
+
+	color-scheme: light;
+}
+
+/* ---- Dark (designed against #17161a) ---- */
+.dark {
+	--surface: #17161a;
+	--plane: #0c0b0a;
+	--raised: #201e22;
+	--ink: #f4f2ea;
+	--ink-2: #b6b2a6;
+	--muted: #85817a;
+	--hairline: #2a2823;
+
+	--seq-never: #1e2633;
+	--seq-some: #3f6fb0;
+	--seq-every: #7fb0ee;
+
+	--good: #24b524;
+	--warn: #fab219;
+	--serious: #ec835a;
+	--critical: #e05555;
+
+	color-scheme: dark;
+}
+
+@layer base {
+	html {
+		background: var(--color-plane);
+		-webkit-text-size-adjust: 100%;
+	}
+	body {
+		background: var(--color-plane);
+		color: var(--color-ink);
+		font-family: var(--font-sans);
+		font-size: 15px;
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
+		text-rendering: optimizeLegibility;
+	}
+	::selection {
+		background: color-mix(in oklab, var(--color-seq-every) 28%, transparent);
+	}
+	/* The evidence voice: monospace figures align to the pixel. */
+	.tabular {
+		font-variant-numeric: tabular-nums;
+		font-feature-settings: 'tnum' 1;
+	}
+	.mono {
+		font-family: var(--font-mono);
+	}
+}
+
+@layer components {
+	/* Case-file divider — dotted hairline, not a card shadow. */
+	.rule-dotted {
+		border-top: 1px dotted var(--color-hairline);
+	}
+	.hairline {
+		border-color: var(--color-hairline);
+	}
+
+	/* First-scroll reveal (once). One easing, ≤250ms. Reduced-motion → static. */
+	.reveal {
+		opacity: 0;
+		transform: translateY(10px);
+		transition:
+			opacity 0.5s var(--ease),
+			transform 0.5s var(--ease);
+	}
+	.reveal.in {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* Rendered RESULTS.md — verbatim prose, Casefile typography. */
+	.results-prose {
+		font-size: 15px;
+		line-height: 1.72;
+		color: var(--color-ink-2);
+	}
+	.results-prose > :first-child {
+		margin-top: 0;
+	}
+	.results-prose h2 {
+		color: var(--color-ink);
+		font-size: clamp(1.35rem, 3vw, 1.9rem);
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		line-height: 1.15;
+		margin: 3.25rem 0 1rem;
+	}
+	.results-prose h3,
+	.results-prose h4 {
+		color: var(--color-ink);
+		font-size: 1.05rem;
+		font-weight: 600;
+		margin: 2rem 0 0.5rem;
+	}
+	.results-prose p {
+		margin: 1rem 0;
+		max-width: none;
+	}
+	.results-prose strong {
+		color: var(--color-ink);
+		font-weight: 600;
+	}
+	.results-prose a {
+		color: var(--color-seq-every);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.results-prose code {
+		font-family: var(--font-mono);
+		font-size: 0.86em;
+		background: color-mix(in oklab, var(--color-ink) 8%, transparent);
+		padding: 0.1em 0.35em;
+		border-radius: 3px;
+	}
+	.results-prose :is(h2, h3) code {
+		background: none;
+		padding: 0;
+		font-size: 0.82em;
+		color: var(--color-muted);
+	}
+	.results-prose ul,
+	.results-prose ol {
+		margin: 1rem 0;
+		padding-left: 1.4rem;
+		max-width: none;
+	}
+	.results-prose li {
+		margin: 0.55rem 0;
+	}
+	.results-prose ul {
+		list-style: none;
+		padding-left: 1.4rem;
+	}
+	.results-prose ul > li {
+		position: relative;
+	}
+	.results-prose ul > li::before {
+		content: '—';
+		position: absolute;
+		left: -1.4rem;
+		color: var(--color-muted);
+	}
+	.results-prose blockquote {
+		border-left: 2px solid var(--color-hairline);
+		padding-left: 1rem;
+		margin: 1.5rem 0;
+		color: var(--color-muted);
+		max-width: none;
+	}
+	.results-prose hr {
+		border: 0;
+		border-top: 1px dotted var(--color-hairline);
+		margin: 2.5rem 0;
+	}
+}
+
+:root {
+	--ease: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.reveal {
+		opacity: 1 !important;
+		transform: none !important;
+		transition: none !important;
+	}
+	* {
+		scroll-behavior: auto !important;
+	}
+}

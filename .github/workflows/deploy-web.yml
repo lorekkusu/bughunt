@@ -1,0 +1,62 @@
+name: deploy web report
+
+# Auto-build the report site from the harness data on every push. The site is
+# 100% derived from harness/config.toml + harness/results + RESULTS.md, so it
+# always shows the latest results with no manual site edits.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'harness/config.toml'
+      - 'harness/results/**'
+      - 'RESULTS.md'
+      - 'answers/**'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Build (data derived from harness/config.toml + results + RESULTS.md)
+        run: pnpm build
+        env:
+          # GitHub Pages project site lives under /<repo>. Change or clear this
+          # if you deploy to a user/org site or a custom domain.
+          BASE_PATH: /${{ github.event.repository.name }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

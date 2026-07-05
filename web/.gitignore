@@ -1,0 +1,29 @@
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# Generated from harness/config.toml + results + RESULTS.md at build/dev time —
+# never committed, so the site is always built fresh from source (never stale).
+/src/lib/data/benchmark.json
+/src/lib/data/results.json
+/src/lib/generated/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

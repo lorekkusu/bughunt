@@ -1,19 +1,37 @@
+<div align="center">
+
+<img src=".github/bughunt-mark.svg" alt="bughunt logo" width="76" height="76" />
+
 # bughunt
 
-Single source of truth for benchmarking AI code-review tools (Codex, Claude, and
-Cursor — bugbot + cursor-agent — today; GLM/opencode, Grok, CodeRabbit, Greptile,
-… later) against projects with a known, planted set of bugs.
+**An honest, open benchmark of AI code-review tools.**
+
+</div>
+
+Single source of truth for benchmarking AI code-review tools (Codex, Claude,
+Cursor — bugbot + cursor-agent — and CodeRabbit today; GLM/opencode, Grok,
+Greptile, … later) against projects with a known, planted set of bugs.
 
 ## Why this exists
 
-This is an informal benchmark, not a rigorous one — and it's honest about that. I
-lean on AI code review in my own day-to-day workflow, so I genuinely need to know
-which tools actually catch real bugs. But most public comparisons are opaque: the
-prompt, the test code, and the scoring are rarely shown, so there's no way to tell
-what was really measured. Rather than trust numbers I can't inspect, I built my own
-test where everything is in the open — the exact projects, the planted bugs, the
-one shared prompt, and how each finding is graded. Take the results as one person's
-transparent experiment, not an authoritative ranking.
+I care about code review. As AI writes more of the code — and writes it faster —
+picking the right reviewer has quietly become the thing I spend the most effort on,
+and the thing I could find the least honest data about. Almost every tool claims
+higher recall and less noise than the rest; almost none of them show the numbers.
+
+This isn't a formal or authoritative benchmark, and it may not discriminate as
+sharply as I'd like. But even a small, open experiment starts to surface the
+questions that actually matter: does more reasoning effort really help? Do the
+purpose-built reviewers earn their price? — especially as that price climbs: free
+tiers are tightening, and hosted reviews are creeping toward a dollar a pull
+request. When review gets expensive, running your own in CI (something like
+pr-agent, or a small harness of your own) becomes a real way to keep costs down —
+which turns "which model, at what effort, for how much time and money?" into a
+question worth measuring.
+
+I don't expect this to be the last word. I just hope it's a useful reference for
+anyone wrestling with the same choice — read the results here, or fork it, add your
+own projects, and run it yourself.
 
 ```
 bughunt/
@@ -107,3 +125,7 @@ enough runs); pass `--force` to redo it. Change the project's code and the skip 
 - **Provenance:** every parameter, CLI flag, model ID, and price is sourced in
   `harness/REFERENCES.md` (with the doc/probe it came from and a verified date).
   When you change a value anywhere, update its row there too.
+
+## License
+
+[MIT](LICENSE) — fork it, add your own projects, and run it yourself.
