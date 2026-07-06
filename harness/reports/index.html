@@ -56,6 +56,31 @@ th { background: #8881; } td.bug { text-align: left; white-space: nowrap; }
 <tr><td class="bug">L2 · low · Overly-broad except swallowing errors</td><td class="no">0/3</td><td class="part">2/3</td><td class="no">0/3</td><td class="part">1/3</td><td class="no">0/3</td><td class="part">2/3</td><td class="no">0/3</td><td class="no">0/3</td><td class="part">1/3</td><td class="no">0/3</td><td class="part">2/3</td><td class="ok">3/3</td></tr>
 <tr><td class="bug">L3 · low · Identity vs equality (is)</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td><td class="ok">3/3</td></tr>
 </tbody></table>
+<h2>python-crossfile</h2>
+<h3>🏆 Leaderboard</h3>
+<table class="metrics"><thead><tr><th>#</th><th>Config</th><th>Recall</th><th>FP</th><th>$/run</th><th>Speed</th></tr></thead><tbody>
+<tr><td>🥇</td><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>97%</td><td>0.0</td><td>$0.3651</td><td>107s</td></tr>
+<tr><td>🥈</td><td class="cfg">claude/claude-opus-4-8/low</td><td>75%</td><td>0.0</td><td>$0.5180</td><td>102s</td></tr>
+</tbody></table>
+<h3>Metrics</h3>
+<table class="metrics"><thead><tr><th>Config</th><th>Runs</th><th>Recall mean</th><th>min–max</th><th>FP</th><th>Bonus</th><th>Speed</th><th>Out-tok</th><th>Est. $</th></tr></thead><tbody>
+<tr><td class="cfg">claude/claude-opus-4-8/low</td><td>1</td><td>75%</td><td>75%–75%</td><td>0.0</td><td>0.0</td><td>102.4s</td><td>5,929</td><td>$0.5180</td></tr>
+<tr><td class="cfg">cursor-agent/composer-2.5-fast/default</td><td>3</td><td>97%</td><td>92%–100%</td><td>0.0</td><td>0.0</td><td>107.2s</td><td>10,537</td><td>$0.3651</td></tr>
+</tbody></table>
+<table><thead><tr><th>Bug</th><th>claude-opus-4-8<br>low</th><th>composer-2.5-fast<br>default</th></tr></thead><tbody>
+<tr><td class="bug">C1 · critical · lease_deadline now returns epoch millis; executor compares it against time.time() seconds, so leases never expire</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">C2 · critical · ready_batch now sorts and returns the queue&#x27;s internal list; dispatch pops from it, silently draining the queue</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">C3 · critical · Hook dispatch now swallows all hook exceptions; the audit plugin raises AuditReject to veto execution, so the veto is silently ignored (audit bypass)</td><td class="no">0/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H1 · high · pause handler: `state == RUNNING or QUEUED` is always truthy, so any job (including DONE) can be paused and later re-queued</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H2 · high · cache status key renamed job:{id} -&gt; jobs/{id}; executor still invalidates the old hardcoded key, so completed jobs serve stale status until TTL</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">H3 · high · New PAUSED state falls into dispatch&#x27;s defensive else branch, which marks unknown-state jobs FAILED</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M1 · medium · PAUSED added to JobState and is_active, but the _TRANSITIONS table in the same file has no PAUSED entries — resume raises KeyError</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M2 · medium · get_job changed to return None instead of raising, but update_state in the same file still dereferences the result — AttributeError instead of clean JobNotFound</td><td class="no">0/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">M3 · medium · Event log ts now written in millis; the SDK timeline reader feeds it to datetime.fromtimestamp and second-based duration math (far-future dates, 1000x durations)</td><td class="no">0/1</td><td class="part">2/3</td></tr>
+<tr><td class="bug">L1 · low · parse_duration minutes branch multiplies by 6000 instead of 60000</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L2 · low · RetryPolicy caps backoff with max() instead of min(), so every retry waits at least the cap</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+<tr><td class="bug">L3 · low · Retry extraction left the old job.attempts += 1 in the executor while RetryPolicy.record_failure also increments — attempts counted twice, retries exhausted twice as fast</td><td class="ok">1/1</td><td class="ok">3/3</td></tr>
+</tbody></table>
 <h2>python-pricing</h2>
 <h3>🏆 Leaderboard</h3>
 <table class="metrics"><thead><tr><th>#</th><th>Config</th><th>Recall</th><th>FP</th><th>$/run</th><th>Speed</th></tr></thead><tbody>

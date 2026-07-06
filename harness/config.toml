@@ -4,15 +4,18 @@
 [paths]
 projects_dir = "../projects"
 answers_dir  = "../answers"
+patches_dir  = "../patches"           # diff-mode PR overlays (one dir per project)
 scratch_dir  = "../projects/.bench"   # gitignored working area for review copies
 results_dir  = "results"              # committed structured results (one json per config)
 reports_dir  = "reports"              # generated markdown/HTML
 pricing_file = "pricing.json"
 prompt_file  = "review_prompt.md"
+diff_prompt_file = "review_prompt_diff.md"
 
 [run]
 default_runs = 3
 prompt_id    = "standard-v1"          # bump if you edit review_prompt.md
+diff_prompt_id = "diff-v1"            # bump if you edit review_prompt_diff.md
 
 [judge]
 # LLM-as-judge runs via the local `claude` CLI (headless, no API key needed).
@@ -37,6 +40,14 @@ name       = "python-scheduling"
 path       = "python-scheduling"
 answer_key = "python-scheduling.md"
 theme      = "Date/time & calendar correctness"
+
+[[projects]]
+name        = "python-crossfile"
+path        = "python-crossfile"
+answer_key  = "python-crossfile.md"
+theme       = "Cross-file contracts under a PR diff (task-queue service)"
+review_mode = "diff"                  # subject reviews `git diff main...HEAD`, not the tree
+patch      = "python-crossfile"       # dir under patches_dir with manifest.toml + overlay/
 
 # ---- Providers -------------------------------------------------------------
 [providers.codex]

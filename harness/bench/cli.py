@@ -59,11 +59,13 @@ def run(
 ):
     """Run one or more automated benchmark configs (project × provider × model × effort)."""
     cfg = load_config()
-    prompt = cfg.review_prompt()
     pricing = load_pricing(cfg.pricing_file)
     runs = runs or cfg.default_runs
 
     project = _need(project, "Project", cfg.project_names, no_interactive)
+    is_diff = cfg.is_diff_project(project)
+    prompt = cfg.diff_review_prompt() if is_diff else cfg.review_prompt()
+    standard_prompt_id = cfg.diff_prompt_id if is_diff else cfg.prompt_id
     # manual tools are scored via `bench judge` only — keep them out of the run menu
     runnable = [p for p in cfg.provider_names if not cfg.provider_cfg(p).get("manual")]
     provider = _need(provider, "Provider (tool under test)", runnable, no_interactive)
@@ -99,7 +101,7 @@ def run(
                 cfg, project, provider, mo, ef, runs, prompt, pricing,
                 judge_model=judge_model, force=force, keep_scratch=keep_scratch,
                 on_round=None if no_interactive else on_round,
-                prompt_id="native" if pcfg.get("native") else cfg.prompt_id,
+                prompt_id="native" if pcfg.get("native") else standard_prompt_id,
             )
         if result.skipped:
             console.print("[dim]cached (same code + enough runs) — use --force to re-run[/]")
@@ -146,7 +148,12 @@ def judge(
             raise typer.BadParameter(f"empty file: {f}")
         texts.append(t)
 
-    prompt_id = "native" if pcfg.get("native") else cfg.prompt_id
+    if pcfg.get("native"):
+        prompt_id = "native"
+    elif cfg.is_diff_project(project):
+        prompt_id = cfg.diff_prompt_id
+    else:
+        prompt_id = cfg.prompt_id
     console.print(
         f"\n[bold]Judging[/] {len(texts)} manual result(s) · {provider}/{model}/{effort} · "
         f"prompt={prompt_id} · judge={judge_model or cfg.judge_model}\n"
@@ -165,6 +172,72 @@ def judge(
     summary_mod.write_markdown(cfg)
     summary_mod.write_html(cfg)
     console.print(f"[dim]raw inputs → {raw_dir}  ·  summary refreshed[/]")
+
+
+@app.command()
+def validate(
+    project: str = typer.Option(None, "--project", "-p", help="Project name (default: all diff-mode projects)"),
+    tests: bool = typer.Option(False, "--tests", help="Also run the test suite on base AND head"),
+):
+    """Check a diff-mode project's consistency: overlay vs base tree, answer-key
+    paths, PR materialization — and optionally that tests pass on both sides."""
+    import shutil as _shutil
+    import tempfile as _tempfile
+    from pathlib import Path as _Path
+
+    from . import diffmode
+    from .config import load_manifest
+
+    cfg = load_config()
+    names = [project] if project else [n for n in cfg.project_names if cfg.is_diff_project(n)]
+    if not names:
+        console.print("[yellow]no diff-mode projects configured[/]")
+        raise typer.Exit(0)
+
+    failed = False
+    for name in names:
+        if not cfg.is_diff_project(name):
+            console.print(f"[yellow]{name} is not a diff-mode project — skipping[/]")
+            continue
+        pmeta = cfg.project(name)
+        src = cfg.projects_dir / pmeta["path"]
+        patch_dir = cfg.patch_dir(name)
+        manifest = load_manifest(cfg.answers_dir / pmeta["answer_key"])
+
+        console.rule(name)
+        problems = diffmode.validate(src, patch_dir, manifest)
+
+        # prove the PR actually materializes
+        tmp = _Path(_tempfile.mkdtemp(prefix="bughunt-validate-"))
+        copy = tmp / src.name
+        try:
+            _shutil.copytree(src, copy, ignore=_shutil.ignore_patterns(
+                ".git", ".venv", "__pycache__", ".pytest_cache", "*.pyc"))
+            if tests:
+                ok, tail = diffmode.run_tests(copy)
+                console.print(f"base tests: {'[green]pass[/]' if ok else '[red]FAIL[/]'}")
+                if not ok:
+                    problems.append(f"base test suite fails:\n{tail}")
+            try:
+                diffmode.apply_pr(copy, patch_dir)
+                console.print("PR materialization: [green]ok[/]")
+            except diffmode.DiffSetupError as exc:
+                problems.append(f"materialization failed: {exc}")
+            if tests and not any("materialization" in p for p in problems):
+                ok, tail = diffmode.run_tests(copy)
+                console.print(f"head tests: {'[green]pass[/]' if ok else '[red]FAIL[/]'}")
+                if not ok:
+                    problems.append(f"head test suite fails:\n{tail}")
+        finally:
+            _shutil.rmtree(tmp, ignore_errors=True)
+
+        if problems:
+            failed = True
+            for p in problems:
+                console.print(f"[red]✗[/] {p}")
+        else:
+            console.print("[green]✓ consistent[/]")
+    raise typer.Exit(1 if failed else 0)
 
 
 @app.command()

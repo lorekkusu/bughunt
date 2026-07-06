@@ -15,3 +15,4 @@ important topic (see `../harness/docs/authoring-advanced.md`).
 | `python-basic` | Python (UV/Flask) | Basic | 3 / 3 / 3 / 3 | Textbook web-backend vulns & correctness bugs |
 | `python-pricing` | Python (UV) | Money | 3 / 3 / 3 / 3 | Subtle money-math correctness (float/rounding/tax/discount) |
 | `python-scheduling` | Python (UV) | Date/time | 3 / 3 / 3 / 3 | Calendar & datetime correctness (intervals, tz, recurrence) |
+| `python-crossfile` | Python (UV) | Cross-file / diff | 3 / 3 / 3 / 3 (+6 base) | PR review on a ~4k-line task-queue service; recall vs context distance D0–D3 (see `../harness/docs/diff-mode.md`) |

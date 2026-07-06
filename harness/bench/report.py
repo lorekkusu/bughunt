@@ -55,6 +55,27 @@ def print_summary(r: ConfigResult) -> None:
         f"[bold]FP[/] {_fmt(m['false_positives']['mean'], '.1f')}   "
         f"[bold]Bonus[/] {_fmt(m['bonus']['mean'], '.1f')}"
     )
+    by_dist = m.get("recall_by_distance")
+    if by_dist:
+        parts = [
+            f"{tier} {_fmt(s['mean'] and s['mean']*100, '.0f', '%')} ({s['bugs']})"
+            for tier, s in by_dist.items()
+        ]
+        console.print(f"[bold]Recall by distance[/] {'  ·  '.join(parts)}")
+    if r.base_bugs:
+        base_counts = r.per_base_bug_counts()
+        on = [b for b in r.base_bugs if b.get("location") == "on_path"]
+        off = [b for b in r.base_bugs if b.get("location") == "off_path"]
+
+        def _hits(bugs):
+            found = sum(1 for b in bugs if base_counts.get(b["id"], 0) > 0)
+            return f"{found}/{len(bugs)}"
+
+        console.print(
+            f"[bold]Out-of-diff discovery[/] "
+            f"on-path {_hits(on)}  ·  off-path {_hits(off)} "
+            f"[dim](pre-existing bugs; separate axis, not recall/FP)[/]"
+        )
     console.print(
         f"[bold]Speed[/] {_fmt(m['elapsed_s']['mean'], '.1f', 's')}   "
         f"[bold]Out-tok[/] {_fmt(m['output_tokens']['mean'] and round(m['output_tokens']['mean']), ',')}   "
@@ -108,10 +129,59 @@ def write_markdown(r: ConfigResult, reports_dir: Path) -> Path:
         "| ID | Severity | Bug | Found |",
         "|----|----------|-----|:-----:|",
     ]
+    has_distance = any(b.get("distance") for b in r.planted)
+    if has_distance:
+        # rebuild the table with a distance column for diff-mode projects
+        lines = lines[:-2] + [
+            "| ID | Severity | Distance | Bug | Found |",
+            "|----|----------|:--------:|-----|:-----:|",
+        ]
     for bug in sorted(r.planted, key=lambda b: (_SEV_ORDER.get(b.get("severity"), 9), b["id"])):
         c = counts[bug["id"]]
         sym, _ = stability(c, r.runs)
-        lines.append(f"| {bug['id']} | {bug.get('severity','?')} | {bug['title']} | {sym} {c}/{r.runs} |")
+        if has_distance:
+            lines.append(
+                f"| {bug['id']} | {bug.get('severity','?')} | {bug.get('distance','—')} "
+                f"| {bug['title']} | {sym} {c}/{r.runs} |"
+            )
+        else:
+            lines.append(f"| {bug['id']} | {bug.get('severity','?')} | {bug['title']} | {sym} {c}/{r.runs} |")
+
+    by_dist = m.get("recall_by_distance")
+    if by_dist:
+        lines += [
+            "",
+            "## Recall by context distance",
+            "",
+            "D0 = visible in the hunk · D1 = whole modified file · D2 = one-hop",
+            "caller/callee in another file · D3 = multi-hop / global invariant.",
+            "",
+            "| Distance | Bugs | Mean recall | Min | Max |",
+            "|----------|:----:|:-----------:|:---:|:---:|",
+        ]
+        for tier, s in by_dist.items():
+            lines.append(
+                f"| {tier} | {s['bugs']} | {pct(s['mean'])} | {pct(s['min'])} | {pct(s['max'])} |"
+            )
+
+    if r.base_bugs:
+        base_counts = r.per_base_bug_counts()
+        lines += [
+            "",
+            "## Out-of-diff discovery (pre-existing bugs — separate axis)",
+            "",
+            "Real bugs on `main`, untouched by the PR. Reporting them is neither",
+            "rewarded in recall nor punished as FP. on_path = lives in a file a",
+            "reviewer must read to catch a D2/D3 bug; off_path = cold code (finding",
+            "these implies a repo-wide sweep).",
+            "",
+            "| ID | Location | Bug | Reported |",
+            "|----|----------|-----|:--------:|",
+        ]
+        for bug in sorted(r.base_bugs, key=lambda b: (b.get("location", ""), b["id"])):
+            c = base_counts[bug["id"]]
+            sym, _ = stability(c, r.runs)
+            lines.append(f"| {bug['id']} | {bug.get('location','?')} | {bug['title']} | {sym} {c}/{r.runs} |")
 
     # bonus / FP aggregated across rounds
     bonus_titles: dict[str, int] = {}

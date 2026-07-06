@@ -38,14 +38,19 @@ bughunt/
 ├── projects/     # benchmark targets (deliberately buggy code)
 │   ├── python-basic/       # textbook web-backend vulns
 │   ├── python-pricing/     # subtle money-math correctness
-│   └── python-scheduling/  # date/time & calendar correctness
+│   ├── python-scheduling/  # date/time & calendar correctness
+│   └── python-crossfile/   # cross-file contracts under a PR diff (diff mode)
+├── patches/      # diff-mode PR overlays (base tree lives in projects/)
+│   └── python-crossfile/   # manifest.toml (PR metadata) + overlay/ (changed files)
 ├── answers/      # grading keys — one per project (YAML manifest + writeup)
 │   ├── python-basic.md
 │   ├── python-pricing.md
-│   └── python-scheduling.md
+│   ├── python-scheduling.md
+│   └── python-crossfile.md
 └── harness/      # the benchmark tool (Python + UV)
     ├── config.toml
-    ├── review_prompt.md   # the ONE prompt sent to every tool/model (id: standard-v1)
+    ├── review_prompt.md        # the ONE prompt sent to every tool/model (id: standard-v1)
+    ├── review_prompt_diff.md   # its diff-mode counterpart (id: diff-v1)
     ├── pricing.json       # API list prices, for cost ESTIMATES
     ├── REFERENCES.md      # provenance: where every parameter/flag/price comes from
     ├── bench/

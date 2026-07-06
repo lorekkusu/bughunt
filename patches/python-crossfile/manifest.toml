@@ -1,0 +1,32 @@
+# PR metadata + file operations for the python-crossfile diff project.
+#
+# The overlay/ tree next to this file holds the HEAD-state version of every
+# file the PR changes (paths mirror the project root). The harness
+# materializes a review checkout as:
+#   copy projects/python-crossfile -> temp dir
+#   git init; commit everything as `main`
+#   git checkout -b <pr.branch>
+#   copy overlay/* over the tree (applying [files] ops); commit as the PR
+# The diff under review is therefore always `git diff main...HEAD`, generated
+# by git itself — never stored, never able to drift.
+
+[pr]
+branch = "refactor-time-retry-pause"
+title = "refactor: unify time on epoch millis, extract RetryPolicy, add pause/resume"
+description = """
+- Time: new integer epoch-millisecond helpers in core/timing (now_ms,
+  lease_deadline in ms, parse_duration); event-log ts fields and worker
+  heartbeats migrated to ms. Float-seconds now() kept for unmigrated callers.
+- Retry: backoff/jitter extracted from the executor into core/retry.RetryPolicy.
+- Storage: Store.get_job returns None instead of raising for unknown ids;
+  status-cache keys namespaced under jobs/.
+- Feature: JobState.PAUSED with pause/resume endpoints.
+- Perf: PriorityQueue.ready_batch no longer copies on the dispatch hot path.
+- Robustness: plugin hook dispatch isolates hook failures.
+"""
+
+[files]
+# Files in overlay/ replace (or add) the same path in the project tree.
+added = ["src/taskqueue/core/retry.py"]
+deleted = []
+renamed = []

@@ -103,24 +103,31 @@ class CodeRabbitProvider(Provider):
                 cost_usd=None,
             )
 
-        # 1) set up the disposable git repo (empty base + full project)
-        git_err = self._prepare_git(project_copy)
-        if git_err:
-            return ReviewResult(
-                findings_text="",
-                raw_output=f"[git setup failed]\n{git_err}",
-                command="git init + empty base + project commit",
-                returncode=1,
-                elapsed_s=round(time.monotonic() - t0, 1),
-                usage=None,
-                cost_usd=None,
-            )
+        # 1) git setup. Diff-mode projects arrive as a ready git repo (main +
+        #    PR branch checked out) — CodeRabbit's home turf, diff against main.
+        #    Whole-tree projects get the empty-base treatment so every file
+        #    reads as "added".
+        if (project_copy / ".git").exists():
+            base_branch = "main"
+        else:
+            base_branch = _BASE_BRANCH
+            git_err = self._prepare_git(project_copy)
+            if git_err:
+                return ReviewResult(
+                    findings_text="",
+                    raw_output=f"[git setup failed]\n{git_err}",
+                    command="git init + empty base + project commit",
+                    returncode=1,
+                    elapsed_s=round(time.monotonic() - t0, 1),
+                    usage=None,
+                    cost_usd=None,
+                )
 
-        # 2) run the native review against the empty base (whole project = "added").
+        # 2) run the native review against the base branch.
         #    `prompt` is ignored on purpose — CodeRabbit uses its own engine.
         cmd = [
             "coderabbit", "review",
-            "--base", _BASE_BRANCH,
+            "--base", base_branch,
             "--agent",
             "--type", "all",
         ]
@@ -169,7 +176,7 @@ class CodeRabbitProvider(Provider):
         return ReviewResult(
             findings_text=findings_text,
             raw_output=raw,
-            command=f"coderabbit review --base {_BASE_BRANCH} --agent --type all"
+            command=f"coderabbit review --base {base_branch} --agent --type all"
                     + (" --light" if effort == "light" else ""),
             returncode=rc,
             elapsed_s=elapsed,

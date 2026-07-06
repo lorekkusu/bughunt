@@ -18,3 +18,4 @@ scoring sheet.
 | `python-basic.md` | `projects/python-basic` | 3 / 3 / 3 / 3 |
 | `python-pricing.md` | `projects/python-pricing` | 3 / 3 / 3 / 3 |
 | `python-scheduling.md` | `projects/python-scheduling` | 3 / 3 / 3 / 3 |
+| `python-crossfile.md` | `projects/python-crossfile` + `patches/python-crossfile` | 3 / 3 / 3 / 3 (+6 base, diff-mode) |

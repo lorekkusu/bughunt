@@ -55,6 +55,37 @@ Recall = planted bugs found. **✅** found every run · **⚠️** some runs · 
 | L2 low Overly-broad except swallowing errors | ❌ 0/3 | ⚠️ 2/3 | ❌ 0/3 | ⚠️ 1/3 | ❌ 0/3 | ⚠️ 2/3 | ❌ 0/3 | ❌ 0/3 | ⚠️ 1/3 | ❌ 0/3 | ⚠️ 2/3 | ✅ 3/3 |
 | L3 low Identity vs equality (is) | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
 
+## python-crossfile
+
+### 🏆 Leaderboard (by recall, then cost)
+
+| # | Config | Recall | FP | $/run | Speed |
+|--:|--------|:------:|:--:|:-----:|:-----:|
+| 🥇 | cursor-agent/composer-2.5-fast/default | 97% | 0.0 | $0.3651 | 107s |
+| 🥈 | claude/claude-opus-4-8/low | 75% | 0.0 | $0.5180 | 102s |
+
+### Metrics (all configs)
+
+| Config | Runs | Recall (mean·min–max) | FP | Bonus | Speed | Out-tok | Est. $ |
+|--------|:----:|-----------------------|:--:|:-----:|:-----:|:-------:|:------:|
+| claude/claude-opus-4-8/`low` ⟨diff-v1⟩ | 1 | 75% · 75%–75% | 0.0 | 0.0 | 102.4s | 5,929 | $0.5180 |
+| cursor-agent/composer-2.5-fast/`default` ⟨diff-v1⟩ | 3 | 97% · 92%–100% | 0.0 | 0.0 | 107.2s | 10,537 | $0.3651 |
+
+| Bug | claude-opus-4-8/`low` ⟨diff-v1⟩ | composer-2.5-fast/`default` ⟨diff-v1⟩ |
+|-----|:---:|:---:|
+| C1 crit lease_deadline now returns epoch millis; executor compares it against time.time() seconds, so leases never expire | ✅ 1/1 | ✅ 3/3 |
+| C2 crit ready_batch now sorts and returns the queue's internal list; dispatch pops from it, silently draining the queue | ✅ 1/1 | ✅ 3/3 |
+| C3 crit Hook dispatch now swallows all hook exceptions; the audit plugin raises AuditReject to veto execution, so the veto is silently ignored (audit bypass) | ❌ 0/1 | ✅ 3/3 |
+| H1 high pause handler: `state == RUNNING or QUEUED` is always truthy, so any job (including DONE) can be paused and later re-queued | ✅ 1/1 | ✅ 3/3 |
+| H2 high cache status key renamed job:{id} -> jobs/{id}; executor still invalidates the old hardcoded key, so completed jobs serve stale status until TTL | ✅ 1/1 | ✅ 3/3 |
+| H3 high New PAUSED state falls into dispatch's defensive else branch, which marks unknown-state jobs FAILED | ✅ 1/1 | ✅ 3/3 |
+| M1 medi PAUSED added to JobState and is_active, but the _TRANSITIONS table in the same file has no PAUSED entries — resume raises KeyError | ✅ 1/1 | ✅ 3/3 |
+| M2 medi get_job changed to return None instead of raising, but update_state in the same file still dereferences the result — AttributeError instead of clean JobNotFound | ❌ 0/1 | ✅ 3/3 |
+| M3 medi Event log ts now written in millis; the SDK timeline reader feeds it to datetime.fromtimestamp and second-based duration math (far-future dates, 1000x durations) | ❌ 0/1 | ⚠️ 2/3 |
+| L1 low parse_duration minutes branch multiplies by 6000 instead of 60000 | ✅ 1/1 | ✅ 3/3 |
+| L2 low RetryPolicy caps backoff with max() instead of min(), so every retry waits at least the cap | ✅ 1/1 | ✅ 3/3 |
+| L3 low Retry extraction left the old job.attempts += 1 in the executor while RetryPolicy.record_failure also increments — attempts counted twice, retries exhausted twice as fast | ✅ 1/1 | ✅ 3/3 |
+
 ## python-pricing
 
 ### 🏆 Leaderboard (by recall, then cost)

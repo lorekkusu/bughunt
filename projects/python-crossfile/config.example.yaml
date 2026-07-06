@@ -1,0 +1,13 @@
+# taskqueue example configuration (parsed by taskqueue.core.config — flat "key: value" lines)
+queue_max_size: 10000
+lease_ttl_s: 60
+retry_base_s: 1.0
+retry_cap_s: 60.0
+max_attempts: 5
+status_ttl_s: 30
+poll_interval_s: 0.5
+workers: 4
+rate_limit_per_minute: 120
+events_path: events.jsonl
+audit_log_path: audit.log
+plugins: taskqueue.clients.plugins.audit,taskqueue.clients.plugins.metrics_hook

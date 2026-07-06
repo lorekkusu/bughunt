@@ -1,0 +1,294 @@
+{
+  "project": "python-crossfile",
+  "provider": "claude",
+  "model": "claude-opus-4-8",
+  "effort": "low",
+  "prompt_id": "diff-v1",
+  "judge_model": "opus",
+  "code_hash": "a5d4dd12d58a",
+  "runs": 1,
+  "created": "2026-07-06 19:09:09",
+  "planted": [
+    {
+      "id": "C1",
+      "severity": "critical",
+      "distance": "D2",
+      "title": "lease_deadline now returns epoch millis; executor compares it against time.time() seconds, so leases never expire",
+      "file": "src/taskqueue/core/timing.py",
+      "symbol": "lease_deadline",
+      "evidence_file": "src/taskqueue/workers/executor.py",
+      "evidence_symbol": "_lease_expired"
+    },
+    {
+      "id": "C2",
+      "severity": "critical",
+      "distance": "D2",
+      "title": "ready_batch now sorts and returns the queue's internal list; dispatch pops from it, silently draining the queue",
+      "file": "src/taskqueue/core/queue.py",
+      "symbol": "ready_batch",
+      "evidence_file": "src/taskqueue/workers/dispatch.py",
+      "evidence_symbol": "run_once"
+    },
+    {
+      "id": "C3",
+      "severity": "critical",
+      "distance": "D3",
+      "title": "Hook dispatch now swallows all hook exceptions; the audit plugin raises AuditReject to veto execution, so the veto is silently ignored (audit bypass)",
+      "file": "src/taskqueue/clients/plugins/base.py",
+      "symbol": "_run_hooks",
+      "evidence_file": "src/taskqueue/clients/plugins/audit.py",
+      "evidence_symbol": "AuditPlugin.before_execute"
+    },
+    {
+      "id": "H1",
+      "severity": "high",
+      "distance": "D0",
+      "title": "pause handler: `state == RUNNING or QUEUED` is always truthy, so any job (including DONE) can be paused and later re-queued",
+      "file": "src/taskqueue/api/handlers.py",
+      "symbol": "pause_job"
+    },
+    {
+      "id": "H2",
+      "severity": "high",
+      "distance": "D2",
+      "title": "cache status key renamed job:{id} -> jobs/{id}; executor still invalidates the old hardcoded key, so completed jobs serve stale status until TTL",
+      "file": "src/taskqueue/storage/cache.py",
+      "symbol": "status_key",
+      "evidence_file": "src/taskqueue/workers/executor.py",
+      "evidence_symbol": "_finish"
+    },
+    {
+      "id": "H3",
+      "severity": "high",
+      "distance": "D3",
+      "title": "New PAUSED state falls into dispatch's defensive else branch, which marks unknown-state jobs FAILED",
+      "file": "src/taskqueue/core/job.py",
+      "symbol": "JobState",
+      "evidence_file": "src/taskqueue/workers/dispatch.py",
+      "evidence_symbol": "_route"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "distance": "D1",
+      "title": "PAUSED added to JobState and is_active, but the _TRANSITIONS table in the same file has no PAUSED entries \u2014 resume raises KeyError",
+      "file": "src/taskqueue/core/job.py",
+      "symbol": "_TRANSITIONS",
+      "evidence_symbol": "can_transition"
+    },
+    {
+      "id": "M2",
+      "severity": "medium",
+      "distance": "D1",
+      "title": "get_job changed to return None instead of raising, but update_state in the same file still dereferences the result \u2014 AttributeError instead of clean JobNotFound",
+      "file": "src/taskqueue/storage/store.py",
+      "symbol": "Store.get_job",
+      "evidence_symbol": "Store.update_state"
+    },
+    {
+      "id": "M3",
+      "severity": "medium",
+      "distance": "D3",
+      "title": "Event log ts now written in millis; the SDK timeline reader feeds it to datetime.fromtimestamp and second-based duration math (far-future dates, 1000x durations)",
+      "file": "src/taskqueue/storage/events.py",
+      "symbol": "append_event",
+      "evidence_file": "src/taskqueue/clients/sdk.py",
+      "evidence_symbol": "job_timeline"
+    },
+    {
+      "id": "L1",
+      "severity": "low",
+      "distance": "D0",
+      "title": "parse_duration minutes branch multiplies by 6000 instead of 60000",
+      "file": "src/taskqueue/core/timing.py",
+      "symbol": "parse_duration"
+    },
+    {
+      "id": "L2",
+      "severity": "low",
+      "distance": "D0",
+      "title": "RetryPolicy caps backoff with max() instead of min(), so every retry waits at least the cap",
+      "file": "src/taskqueue/core/retry.py",
+      "symbol": "RetryPolicy.next_delay_ms"
+    },
+    {
+      "id": "L3",
+      "severity": "low",
+      "distance": "D1",
+      "title": "Retry extraction left the old job.attempts += 1 in the executor while RetryPolicy.record_failure also increments \u2014 attempts counted twice, retries exhausted twice as fast",
+      "file": "src/taskqueue/workers/executor.py",
+      "symbol": "_handle_failure",
+      "evidence_symbol": "_handle_failure"
+    }
+  ],
+  "manual": false,
+  "rounds": [
+    {
+      "found": [
+        "C1",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 0,
+      "elapsed_s": 102.4,
+      "usage": {
+        "input_tokens": 4173,
+        "cached_input_tokens": 174385,
+        "cache_creation_input_tokens": 26167,
+        "output_tokens": 5929
+      },
+      "cost_usd": 0.5179525,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [],
+      "base_found": []
+    }
+  ],
+  "per_bug": {
+    "C1": 1,
+    "C2": 1,
+    "C3": 0,
+    "H1": 1,
+    "H2": 1,
+    "H3": 1,
+    "M1": 1,
+    "M2": 0,
+    "M3": 0,
+    "L1": 1,
+    "L2": 1,
+    "L3": 1
+  },
+  "base_bugs": [
+    {
+      "id": "B1",
+      "severity": "medium",
+      "location": "on_path",
+      "title": "Dispatch loop catches Exception and logs at DEBUG, silently swallowing routing failures",
+      "file": "src/taskqueue/workers/dispatch.py",
+      "symbol": "run_once"
+    },
+    {
+      "id": "B2",
+      "severity": "high",
+      "location": "on_path",
+      "title": "SDK submit() retries on timeout without an idempotency key \u2014 duplicate job submission",
+      "file": "src/taskqueue/clients/sdk.py",
+      "symbol": "Client.submit"
+    },
+    {
+      "id": "B3",
+      "severity": "medium",
+      "location": "on_path",
+      "title": "Audit plugin opens its log with mode 'w' on init, truncating the audit history on every restart",
+      "file": "src/taskqueue/clients/plugins/audit.py",
+      "symbol": "AuditPlugin.__init__"
+    },
+    {
+      "id": "B4",
+      "severity": "high",
+      "location": "off_path",
+      "title": "Backup restore deserializes with pickle.loads (RCE tripwire \u2014 catchable only by scanning far outside the diff)",
+      "file": "src/taskqueue/storage/backup.py",
+      "symbol": "restore"
+    },
+    {
+      "id": "B5",
+      "severity": "low",
+      "location": "off_path",
+      "title": "metrics.avg divides by len(samples) with no empty guard \u2014 ZeroDivisionError",
+      "file": "src/taskqueue/core/metrics.py",
+      "symbol": "avg"
+    },
+    {
+      "id": "B6",
+      "severity": "medium",
+      "location": "off_path",
+      "title": "Rate limiter does an unlocked check-then-increment on a shared counter \u2014 lost updates under threads",
+      "file": "src/taskqueue/api/ratelimit.py",
+      "symbol": "RateLimiter.allow"
+    }
+  ],
+  "per_base_bug": {
+    "B1": 0,
+    "B2": 0,
+    "B3": 0,
+    "B4": 0,
+    "B5": 0,
+    "B6": 0
+  },
+  "metrics": {
+    "recall": {
+      "mean": 0.75,
+      "min": 0.75,
+      "max": 0.75
+    },
+    "out_of_diff_discovery": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "recall_by_distance": {
+      "D0": {
+        "bugs": 3,
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "D1": {
+        "bugs": 3,
+        "mean": 0.6666666666666666,
+        "min": 0.6666666666666666,
+        "max": 0.6666666666666666
+      },
+      "D2": {
+        "bugs": 3,
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "D3": {
+        "bugs": 3,
+        "mean": 0.3333333333333333,
+        "min": 0.3333333333333333,
+        "max": 0.3333333333333333
+      }
+    },
+    "false_positives": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "bonus": {
+      "mean": 0.0,
+      "min": 0,
+      "max": 0
+    },
+    "elapsed_s": {
+      "mean": 102.4,
+      "min": 102.4,
+      "max": 102.4
+    },
+    "output_tokens": {
+      "mean": 5929.0,
+      "min": 5929,
+      "max": 5929
+    },
+    "total_tokens": {
+      "mean": 10102.0,
+      "min": 10102,
+      "max": 10102
+    },
+    "cost_usd": {
+      "mean": 0.5179525,
+      "min": 0.5179525,
+      "max": 0.5179525
+    }
+  }
+}

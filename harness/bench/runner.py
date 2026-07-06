@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from . import judge
+from . import diffmode, judge
 from .config import Config, load_manifest
 from .pricing import cost_usd
 from .providers import get_provider
@@ -38,6 +38,7 @@ class RoundResult:
     returncode: int
     fp_items: list[dict] = field(default_factory=list)
     bonus_items: list[dict] = field(default_factory=list)
+    base_found: list[str] = field(default_factory=list)   # diff mode: pre-existing bugs reported
 
 
 @dataclass
@@ -53,6 +54,7 @@ class ConfigResult:
     created: str
     planted: list[dict]            # manifest planted_bugs (id, severity, title, ...)
     rounds: list[RoundResult]
+    base_bugs: list[dict] = field(default_factory=list)  # diff mode: manifest base_bugs
     skipped: bool = False
     manual: bool = False           # produced by a human-triggered tool via `bench judge`
     all_failed: bool = False       # every round errored (e.g. rate-limited) — not persisted
@@ -70,6 +72,26 @@ class ConfigResult:
                     counts[bid] += 1
         return counts
 
+    def per_base_bug_counts(self) -> dict[str, int]:
+        counts = {b["id"]: 0 for b in self.base_bugs}
+        for r in self.rounds:
+            for bid in r.base_found:
+                if bid in counts:
+                    counts[bid] += 1
+        return counts
+
+    def recall_by_distance(self) -> dict[str, dict]:
+        """Mean recall per distance tier (D0..D3), for diff-mode projects."""
+        tiers: dict[str, list[str]] = {}
+        for b in self.planted:
+            if b.get("distance"):
+                tiers.setdefault(b["distance"], []).append(b["id"])
+        out: dict[str, dict] = {}
+        for tier, ids in sorted(tiers.items()):
+            per_round = [len(set(r.found) & set(ids)) / len(ids) for r in self.rounds]
+            out[tier] = {"bugs": len(ids), **self._stats(per_round)}
+        return out
+
     def recall_per_round(self) -> list[float]:
         n = self.total_planted or 1
         return [len(set(r.found) & {b["id"] for b in self.planted}) / n for r in self.rounds]
@@ -86,8 +108,14 @@ class ConfigResult:
         }
 
     def metrics(self) -> dict:
+        out_of_diff = None
+        if self.base_bugs:
+            n = len(self.base_bugs)
+            out_of_diff = self._stats([len(set(r.base_found)) / n for r in self.rounds])
         return {
             "recall": self._stats(self.recall_per_round()),
+            **({"out_of_diff_discovery": out_of_diff} if out_of_diff else {}),
+            **({"recall_by_distance": self.recall_by_distance()} if self.recall_by_distance() else {}),
             "false_positives": self._stats([r.false_positives for r in self.rounds]),
             "bonus": self._stats([r.bonus for r in self.rounds]),
             "elapsed_s": self._stats([r.elapsed_s for r in self.rounds]),
@@ -115,6 +143,9 @@ class ConfigResult:
         }
         d["rounds"] = [asdict(r) for r in self.rounds]
         d["per_bug"] = self.per_bug_counts()
+        if self.base_bugs:
+            d["base_bugs"] = self.base_bugs
+            d["per_base_bug"] = self.per_base_bug_counts()
         d["metrics"] = self.metrics()
         return d
 
@@ -131,6 +162,7 @@ class ConfigResult:
                 returncode=r.get("returncode", 0),
                 fp_items=r.get("fp_items", []),
                 bonus_items=r.get("bonus_items", []),
+                base_found=r.get("base_found", []),
             )
             for r in d.get("rounds", [])
         ]
@@ -140,6 +172,7 @@ class ConfigResult:
             judge_model=d.get("judge_model", "?"), code_hash=d.get("code_hash", ""),
             runs=d.get("runs", len(rounds)), created=d.get("created", ""),
             planted=d.get("planted", []), rounds=rounds, skipped=skipped,
+            base_bugs=d.get("base_bugs", []),
             manual=d.get("manual", False),
         )
 
@@ -197,8 +230,16 @@ def run_config(
     src = cfg.projects_dir / project["path"]
     if not src.exists():
         raise SystemExit(f"project path not found: {src}")
+    is_diff = cfg.is_diff_project(project_name)
+    patch_dir = cfg.patch_dir(project_name) if is_diff else None
     judge_model = judge_model or cfg.judge_model
     code_hash = project_code_hash(src)
+    if patch_dir is not None:
+        # the reviewed artifact is base + PR, so the hash must cover both
+        combined = hashlib.sha256(
+            (code_hash + project_code_hash(patch_dir)).encode()
+        )
+        code_hash = combined.hexdigest()[:12]
     out_path = results_path(cfg, project_name, provider_name, model, effort)
 
     # skip-if-unchanged: same code + enough runs already recorded
@@ -214,6 +255,8 @@ def run_config(
     for i in range(runs):
         tag = f"{project_name}__{provider_name}__{model}__{effort}__r{i+1}__{datetime.now():%Y%m%d-%H%M%S}"
         copy = _prepare_copy(cfg, src, tag)
+        if patch_dir is not None:
+            diffmode.apply_pr(copy, patch_dir)
         review = provider.run_review(copy, model, effort, prompt)
         verdict = judge.score(manifest, review.findings_text, model=judge_model)
         # provider may report its own API-equivalent cost (e.g. claude CLI);
@@ -230,6 +273,7 @@ def run_config(
                 returncode=review.returncode,
                 fp_items=verdict.false_positives,
                 bonus_items=verdict.bonus_bugs,
+                base_found=verdict.base_found_ids,
             )
         )
         if not keep_scratch:
@@ -242,6 +286,7 @@ def run_config(
         prompt_id=prompt_id or cfg.prompt_id, judge_model=judge_model, code_hash=code_hash,
         runs=runs, created=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         planted=manifest.get("planted_bugs", []), rounds=rounds,
+        base_bugs=manifest.get("base_bugs", []),
     )
     # An errored round (e.g. a rate-limited or crashed tool) is not a real 0%
     # score, so it must not count. Drop failed rounds; keep only the good ones.
@@ -296,6 +341,7 @@ def judge_manual(
                 returncode=0,
                 fp_items=verdict.false_positives,
                 bonus_items=verdict.bonus_bugs,
+                base_found=verdict.base_found_ids,
             )
         )
 
@@ -303,7 +349,8 @@ def judge_manual(
         project=project_name, provider=provider_name, model=model, effort=effort,
         prompt_id=prompt_id, judge_model=judge_model, code_hash=code_hash,
         runs=len(rounds), created=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        planted=manifest.get("planted_bugs", []), rounds=rounds, manual=True,
+        planted=manifest.get("planted_bugs", []), rounds=rounds,
+        base_bugs=manifest.get("base_bugs", []), manual=True,
     )
     out_path = results_path(cfg, project_name, provider_name, model, effort)
     out_path.parent.mkdir(parents=True, exist_ok=True)
