@@ -12,6 +12,10 @@
 
 	const fpTone = (fp: number) =>
 		fp === 0 ? 'var(--color-good)' : fp < 1 ? 'var(--color-warn)' : 'var(--color-critical)';
+
+	// one-pass totals read better in minutes once they leave the sub-minute range
+	const fmtSpeed = (s: number | null) =>
+		s == null ? '—' : s < 60 ? `${s}s` : `${(s / 60).toFixed(1)}m`;
 </script>
 
 <div class="overflow-x-auto">
@@ -27,7 +31,7 @@
 			<span class="text-center text-ink">overall</span>
 			<span class="text-right">FP</span>
 			<span class="text-right">bonus</span>
-			<span class="text-right">avg.speed</span>
+			<span class="text-right">time</span>
 			<span class="text-right">$</span>
 		</div>
 
@@ -56,12 +60,12 @@
 
 				<span class="text-right" style="color: {fpTone(o.fp)}" title="mean false positives / run">·{o.fp.toFixed(1)}</span>
 				<span class="text-right text-ink-2" title="total extra real bugs found, all projects">+{Math.round(o.bonusTotal)}</span>
-				<span class="text-right text-muted" title="mean seconds / run">{o.speedMean != null ? `${o.speedMean}s` : '—'}</span>
+				<span class="text-right text-muted" title="total time for one pass of all projects, serial">{fmtSpeed(o.speedTotal)}</span>
 				<span class="text-right text-muted" title="total cost for one pass of all projects">{o.costTotal != null ? `$${o.costTotal.toFixed(2)}` : '—'}</span>
 			</div>
 		{/each}
 	</div>
 	<p class="mono mt-2 text-[11px] text-muted">
-		severity cells: found / possible run-hits (planted × runs, all projects) · overall: mean recall · FP: mean/run · bonus &amp; $: totals for one full pass · speed: mean s/run
+		severity cells: found / possible run-hits (planted × runs, all projects) · overall: mean recall · FP: mean/run · bonus, time &amp; $: totals for one full pass (time = serial)
 	</p>
 </div>

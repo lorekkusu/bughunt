@@ -59,6 +59,9 @@ for (const [key, p] of Object.entries(cfg.providers ?? {})) {
 }
 const projectOrder = (cfg.projects ?? []).map((p) => p.name);
 const projectTheme = Object.fromEntries((cfg.projects ?? []).map((p) => [p.name, p.theme ?? '']));
+const projectMode = Object.fromEntries(
+	(cfg.projects ?? []).map((p) => [p.name, p.review_mode === 'diff' ? 'diff' : 'tree'])
+);
 
 // canonical effort order = union of providers' `efforts` in declaration order.
 const effortOrder = [];
@@ -81,6 +84,7 @@ function walk(dir) {
 
 const configs = [];
 const bugsByProject = {};
+const baseBugsByProject = {};
 const seenPairs = new Set(); // `${provider}/${model}`
 
 for (const f of walk(RESULTS)) {
@@ -97,7 +101,18 @@ for (const f of walk(RESULTS)) {
 			severity: b.severity,
 			title: b.title,
 			file: b.file,
-			symbol: b.symbol
+			symbol: b.symbol,
+			...(b.distance ? { distance: b.distance } : {})
+		}));
+	}
+	// diff-mode: pre-existing base bugs are a separate axis (never recall/FP)
+	if (d.base_bugs?.length && !baseBugsByProject[d.project]) {
+		baseBugsByProject[d.project] = d.base_bugs.map((b) => ({
+			id: b.id,
+			severity: b.severity,
+			location: b.location,
+			title: b.title,
+			file: b.file
 		}));
 	}
 	const m = d.metrics;
@@ -116,7 +131,20 @@ for (const f of walk(RESULTS)) {
 		bonus: round(m.bonus.mean, 2),
 		speedS: m.elapsed_s.mean == null ? null : Math.round(m.elapsed_s.mean),
 		cost: m.cost_usd?.mean == null ? null : round(m.cost_usd.mean, 4),
-		perBug: d.per_bug
+		perBug: d.per_bug,
+		// diff-mode extras (absent on whole-tree projects)
+		...(m.recall_by_distance
+			? {
+					recallByDistance: Object.fromEntries(
+						Object.entries(m.recall_by_distance).map(([tier, v]) => [
+							tier,
+							{ bugs: v.bugs, mean: round(v.mean), min: round(v.min), max: round(v.max) }
+						])
+					)
+				}
+			: {}),
+		...(m.out_of_diff_discovery ? { outOfDiff: round(m.out_of_diff_discovery.mean) } : {}),
+		...(d.per_base_bug ? { perBaseBug: d.per_base_bug } : {})
 	});
 }
 
@@ -151,7 +179,14 @@ for (const pair of seenPairs) {
 const seenProjects = new Set(configs.map((c) => c.project));
 const projects = projectOrder
 	.filter((p) => seenProjects.has(p))
-	.map((p) => ({ id: p, label: p, theme: projectTheme[p] ?? '', bugs: bugsByProject[p] ?? [] }));
+	.map((p) => ({
+		id: p,
+		label: p,
+		theme: projectTheme[p] ?? '',
+		reviewMode: projectMode[p] ?? 'tree',
+		bugs: bugsByProject[p] ?? [],
+		...(baseBugsByProject[p]?.length ? { baseBugs: baseBugsByProject[p] } : {})
+	}));
 
 // real per-severity planted totals (never an even-split guess)
 const allBugs = projects.flatMap((p) => p.bugs);
@@ -195,7 +230,8 @@ const overall = [...overallMap.values()].map((g) => {
 		bySeverity[sev] = { found, possible };
 	}
 	const costs = g.rows.map((r) => r.cost);
-	const speeds = g.rows.map((r) => r.speedS).filter((s) => s != null);
+	const speeds = g.rows.map((r) => r.speedS);
+	const speedsSeen = speeds.filter((s) => s != null);
 	return {
 		tool: g.tool,
 		provider: g.provider,
@@ -210,7 +246,10 @@ const overall = [...overallMap.values()].map((g) => {
 		cost: costs.some((c) => c == null) ? null : round(mean(costs), 4), // mean $/run (for scatters)
 		costTotal: costs.some((c) => c == null) ? null : round(costs.reduce((s, c) => s + c, 0), 4), // one full pass, all projects
 		bonusTotal: round(g.rows.reduce((s, r) => s + r.bonus, 0), 1),
-		speedMean: speeds.length ? Math.round(mean(speeds)) : null // mean s/run
+		speedMean: speedsSeen.length ? Math.round(mean(speedsSeen)) : null, // mean s/run (per-review latency)
+		// one full pass, all projects, serial — mirrors costTotal's rule:
+		// any missing project makes the total unknowable, so null (never a partial sum)
+		speedTotal: speeds.some((s) => s == null) ? null : Math.round(speeds.reduce((s, x) => s + x, 0))
 	};
 });
 overall.sort((a, b) => b.recall - a.recall || (a.cost ?? 1e9) - (b.cost ?? 1e9));

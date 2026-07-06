@@ -17,8 +17,11 @@ const DATA = join(here, '..', 'src', 'lib', 'data', 'benchmark.json');
 // whose backticked token is a real project. This tolerates heading-format drift
 // (dash type, "Project N", ":") and never mis-attributes a chart.
 let projectIds = new Set();
+let diffProjects = new Set();
 try {
-	projectIds = new Set(JSON.parse(readFileSync(DATA, 'utf-8')).projects.map((p) => p.id));
+	const bench = JSON.parse(readFileSync(DATA, 'utf-8'));
+	projectIds = new Set(bench.projects.map((p) => p.id));
+	diffProjects = new Set(bench.projects.filter((p) => p.reviewMode === 'diff').map((p) => p.id));
 } catch {
 	console.warn('build-results: benchmark.json not found — run build-data first; project charts may be skipped');
 }
@@ -71,6 +74,9 @@ for (let i = 0; i < lines.length; ) {
 		if (currentProject && !sawTable) {
 			flush();
 			blocks.push({ type: 'leaderboard', project: currentProject });
+			// diff-mode projects get the distance-decay chart right after the board
+			if (diffProjects.has(currentProject))
+				blocks.push({ type: 'distance', project: currentProject });
 			sawTable = true;
 			while (i < lines.length && isRow(lines[i])) i++;
 			continue;

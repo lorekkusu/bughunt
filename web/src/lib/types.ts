@@ -18,13 +18,26 @@ export interface Bug {
 	title: string;
 	file: string;
 	symbol: string;
+	/** diff-mode only: context distance tier (D0–D3). */
+	distance?: string;
+}
+
+/** diff-mode only: a pre-existing bug on main — scored on the out-of-diff axis. */
+export interface BaseBug {
+	id: string;
+	severity: Severity;
+	location: 'on_path' | 'off_path';
+	title: string;
+	file: string;
 }
 
 export interface Project {
 	id: string;
 	label: string;
 	theme: string;
+	reviewMode: 'tree' | 'diff';
 	bugs: Bug[];
+	baseBugs?: BaseBug[];
 }
 
 export interface Stat3 {
@@ -49,6 +62,12 @@ export interface Config {
 	speedS: number | null;
 	cost: number | null;
 	perBug: Record<string, number>;
+	/** diff-mode only: recall per context-distance tier. */
+	recallByDistance?: Record<string, { bugs: number; mean: number; min: number; max: number }>;
+	/** diff-mode only: fraction of pre-existing base bugs reported. */
+	outOfDiff?: number;
+	/** diff-mode only: per base bug, found-in-N-runs counts. */
+	perBaseBug?: Record<string, number>;
 }
 
 export interface SeverityCount {
@@ -70,7 +89,8 @@ export interface Overall {
 	cost: number | null; // mean $/run
 	costTotal: number | null; // sum across projects (one full pass)
 	bonusTotal: number; // extra real bugs found, summed
-	speedMean: number | null; // mean s/run
+	speedMean: number | null; // mean s/run (per-review latency; used by efficiency/ROI views)
+	speedTotal: number | null; // sum across projects (one full pass, serial); null if any project unmeasured
 }
 
 export interface Benchmark {

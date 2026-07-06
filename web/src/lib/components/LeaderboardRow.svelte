@@ -17,6 +17,15 @@
 		config.fp === 0 ? 'var(--color-good)' : config.fp < 1 ? 'var(--color-warn)' : 'var(--color-critical)'
 	);
 	const width = $derived(grown ? config.recall.mean * 100 : 0);
+	// diff-mode: compact D0–D3 recall strip (numbers, mono — the casefile way)
+	const dStrip = $derived(
+		config.recallByDistance
+			? Object.keys(config.recallByDistance)
+					.sort()
+					.map((k) => Math.round(config.recallByDistance![k].mean * 100))
+					.join('·')
+			: null
+	);
 </script>
 
 <div class="grid grid-cols-[1.25rem_12rem_1fr_auto] items-center gap-3 py-1.5">
@@ -33,6 +42,9 @@
 
 	<div class="mono tabular flex items-center gap-2.5 text-[13px] whitespace-nowrap">
 		<span class="w-9 text-right text-ink" title="recall">{pct(config.recall.mean)}</span>
+		{#if dStrip}
+			<span class="w-[6.5rem] text-right text-[11px] text-ink-2" title="recall by context distance (D0 · D1 · D2 · D3)">{dStrip}</span>
+		{/if}
 		<span class="w-9 text-right" style="color: {fpTone}" title="false positives / run">·{config.fp.toFixed(1)}</span>
 		<span class="w-9 text-right text-ink-2" title="bonus — extra real bugs found">+{config.bonus.toFixed(1)}</span>
 		<span class="w-11 text-right text-muted" title="mean seconds / run">{config.speedS != null ? `${config.speedS}s` : '—'}</span>

@@ -1,9 +1,12 @@
 <script lang="ts">
 	import results from '$lib/data/results.json';
 	import LeaderboardPanel from '$lib/components/LeaderboardPanel.svelte';
+	import DistanceCurve from '$lib/charts/DistanceCurve.svelte';
 
 	const blocks = results.blocks as Array<
-		{ type: 'prose'; html: string } | { type: 'leaderboard'; project: string }
+		| { type: 'prose'; html: string }
+		| { type: 'leaderboard'; project: string }
+		| { type: 'distance'; project: string }
 	>;
 </script>
 
@@ -23,6 +26,8 @@
 	{#each blocks as block, i (i)}
 		{#if block.type === 'leaderboard'}
 			<LeaderboardPanel projectId={block.project} />
+		{:else if block.type === 'distance'}
+			<DistanceCurve projectId={block.project} />
 		{:else}
 			<div class="results-prose">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->

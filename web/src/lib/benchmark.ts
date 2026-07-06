@@ -43,6 +43,59 @@ export const seriesLabel = (id: string, effort: string) => {
 	return effort && effort !== 'default' ? `${m}·${effort}` : m;
 };
 
+// ---- Diff-mode: recall by context distance ------------------------------------
+
+/** Human definitions for the distance tiers (axis + tooltips). */
+export const DISTANCE_DEFS: Record<string, string> = {
+	D0: 'in the hunk',
+	D1: 'modified file',
+	D2: 'one-hop caller',
+	D3: 'multi-hop'
+};
+
+/**
+ * One decay curve per tool for a diff-mode project, taken at the tool's
+ * best-recall config (leaderboard order = recall desc, cost asc, so the first
+ * config seen per tool is its best). Color follows the tool, never the rank.
+ */
+export function distanceSeries(projectId: string) {
+	const rows = leaderboard(projectId).filter((c) => c.recallByDistance);
+	const seen = new Set<string>();
+	const best: Config[] = [];
+	for (const c of rows) {
+		if (seen.has(c.tool)) continue;
+		seen.add(c.tool);
+		best.push(c);
+	}
+	const tiers = [...new Set(best.flatMap((c) => Object.keys(c.recallByDistance!)))].sort();
+	const series = best.map((c) => {
+		const t = toolById.get(c.tool);
+		return {
+			tool: c.tool,
+			effort: c.effort,
+			label: seriesLabel(c.tool, c.effort),
+			providerLabel: t?.providerLabel ?? '',
+			kind: t?.kind ?? 'model',
+			runs: c.runs,
+			points: tiers
+				.filter((tier) => c.recallByDistance![tier])
+				.map((tier) => ({ tier, ...c.recallByDistance![tier] }))
+		};
+	});
+	return { tiers, series };
+}
+
+/** Scope-discipline facts across every config of a diff-mode project. */
+export function diffDiscipline(projectId: string) {
+	const rows = configs.filter((c) => c.project === projectId);
+	return {
+		configs: rows.length,
+		runs: rows.reduce((s, c) => s + c.runs, 0),
+		fpClean: rows.every((c) => c.fp === 0),
+		outOfDiffZero: rows.every((c) => !c.outOfDiff)
+	};
+}
+
 /** Recall vs effort — one line per model that ran more than one effort tier. */
 const eIdx = (e: string) => effortOrder.indexOf(e);
 export const effortSeries = tools

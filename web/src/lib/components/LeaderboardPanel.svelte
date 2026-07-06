@@ -34,7 +34,7 @@
 			class="mb-3 flex items-baseline justify-between border-b border-dotted border-hairline pb-2"
 		>
 			<span class="mono text-[14px] text-ink">{project.label}</span>
-			<span class="mono text-[11px] text-muted">recall · FP · bonus · speed · $/run{rows[0] ? ` · n=${rows[0].runs}` : ''}</span>
+			<span class="mono text-[11px] text-muted">recall{project?.reviewMode === 'diff' ? ' · D0–D3' : ''} · FP · bonus · speed · $/run{rows[0] ? ` · n=${rows[0].runs}` : ''}</span>
 		</figcaption>
 		<div class="overflow-x-auto">
 			<div class="flex min-w-[32rem] flex-col">

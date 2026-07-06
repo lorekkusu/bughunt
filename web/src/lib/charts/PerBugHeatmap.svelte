@@ -7,7 +7,24 @@
 	let selected = $state(projects[0]?.id ?? '');
 	const project = $derived(projects.find((p) => p.id === selected) ?? projects[0]);
 	const rows = $derived(leaderboard(selected));
-	const cols = $derived(`minmax(10rem,auto) repeat(${project?.bugs.length ?? 0}, minmax(0,1fr))`);
+	const isDiff = $derived(project?.reviewMode === 'diff');
+
+	// diff-mode: group columns by context distance (D0→D3), else keep key order
+	const bugs = $derived.by(() => {
+		const list = project?.bugs ?? [];
+		if (!isDiff) return list;
+		return list
+			.slice()
+			.sort(
+				(a, b) =>
+					(a.distance ?? '').localeCompare(b.distance ?? '') || a.id.localeCompare(b.id)
+			);
+	});
+	const baseBugs = $derived(isDiff ? (project?.baseBugs ?? []) : []);
+	const cols = $derived(
+		`minmax(10rem,auto) repeat(${bugs.length}, minmax(0,1fr))` +
+			(baseBugs.length ? ` 0.9rem repeat(${baseBugs.length}, minmax(0,1fr))` : '')
+	);
 
 	const glyph = (n: number, runs: number) => (n >= runs ? '✅' : n <= 0 ? '❌' : '⚠️');
 
@@ -42,12 +59,23 @@
 				<!-- header: bug ids -->
 				<div class="grid items-end gap-0.5 border-b border-dotted border-hairline pb-1.5" style="grid-template-columns: {cols}">
 					<span class="mono text-[11px] text-muted">config \\ bug</span>
-					{#each project.bugs as b (b.id)}
-						<span class="flex flex-col items-center gap-0.5" title="{b.severity} — {b.title}">
+					{#each bugs as b (b.id)}
+						<span class="flex flex-col items-center gap-0.5" title="{b.severity}{b.distance ? ` · ${b.distance}` : ''} — {b.title}">
 							<span class="inline-block h-1.5 w-1.5 rounded-full" style="background: {SEVERITY_STATUS[b.severity]}"></span>
 							<span class="mono text-[10px] text-ink-2">{b.id}</span>
+							{#if b.distance}<span class="mono text-[8px] text-muted">{b.distance}</span>{/if}
 						</span>
 					{/each}
+					{#if baseBugs.length}
+						<span class="h-full border-l border-dotted border-hairline" aria-hidden="true"></span>
+						{#each baseBugs as b (b.id)}
+							<span class="flex flex-col items-center gap-0.5" title="pre-existing on main ({b.location}) — {b.title}">
+								<span class="inline-block h-1.5 w-1.5 rounded-full border border-hairline" style="background: transparent"></span>
+								<span class="mono text-[10px] text-muted">{b.id}</span>
+								<span class="mono text-[8px] text-muted">{b.location === 'on_path' ? 'on' : 'off'}</span>
+							</span>
+						{/each}
+					{/if}
 				</div>
 
 				<!-- one row per config -->
@@ -61,7 +89,7 @@
 								<span class="mono rounded-[2px] border border-hairline px-1 text-[9px] text-muted">{kindBadge(t.kind)}</span>
 							{/if}
 						</div>
-						{#each project.bugs as b (b.id)}
+						{#each bugs as b (b.id)}
 							{@const n = c.perBug[b.id] ?? 0}
 							<span
 								class="flex cursor-default items-center justify-center text-[13px] leading-none"
@@ -72,12 +100,33 @@
 								{glyph(n, c.runs)}
 							</span>
 						{/each}
+						{#if baseBugs.length}
+							<span class="h-full border-l border-dotted border-hairline" aria-hidden="true"></span>
+							{#each baseBugs as b (b.id)}
+								{@const n = c.perBaseBug?.[b.id] ?? 0}
+								<span
+									class="flex cursor-default items-center justify-center text-[13px] leading-none opacity-70"
+									role="presentation"
+									onmouseenter={(e) =>
+										enter(
+											e,
+											`${b.id} · ${seriesLabel(c.tool, c.effort)}`,
+											`pre-existing (${b.location}) · reported ${n}/${c.runs} runs — separate axis, not recall/FP — ${b.title}`
+										)}
+									onmouseleave={() => (hover = null)}
+								>
+									{glyph(n, c.runs)}
+								</span>
+							{/each}
+						{/if}
 					</div>
 				{/each}
 			</div>
 		</div>
 		<p class="mono mt-3 text-[11px] text-muted">
-			✅ found every run · ⚠️ some runs · ❌ never · rows ranked by recall · hover a cell for the bug
+			✅ found every run · ⚠️ some runs · ❌ never · rows ranked by recall · hover a cell for the bug{#if isDiff}
+				· columns grouped by context distance (D0→D3){/if}{#if baseBugs.length}
+				· right of the divider: pre-existing bugs on main (on/off exploration path) — a separate axis, never recall or FP{/if}
 		</p>
 	{/if}
 
