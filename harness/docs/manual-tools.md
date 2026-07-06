@@ -31,6 +31,11 @@ Run `bench providers` to see every provider, its type (auto/manual), and its
 
 ## 2. Trigger the tool
 
+> **Diff-mode projects** (e.g. `python-crossfile`): the checkout to review is a
+> *materialized PR repo*, not the project directory, and the prompt is
+> `review_prompt_diff.md`. Follow the manual-tool steps in `diff-mode.md`
+> instead of step 1 below; steps 3–4 (capture + judge) are identical.
+
 1. Make sure you're reviewing **`projects/python-basic` at the current commit**
    with a **clean working tree** (`git status` clean) — the judge stamps the
    current `code_hash`, so a different checkout would mislabel the result.

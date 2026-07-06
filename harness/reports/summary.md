@@ -62,29 +62,49 @@ Recall = planted bugs found. **✅** found every run · **⚠️** some runs · 
 | # | Config | Recall | FP | $/run | Speed |
 |--:|--------|:------:|:--:|:-----:|:-----:|
 | 🥇 | cursor-agent/composer-2.5-fast/default | 97% | 0.0 | $0.3651 | 107s |
-| 🥈 | claude/claude-opus-4-8/low | 75% | 0.0 | $0.5180 | 102s |
+| 🥈 | codex/gpt-5.5/xhigh | 97% | 0.0 | $1.0508 | 273s |
+| 🥉 | cursor/bugbot/default ⟨manual⟩ | 97% | 0.0 | — | — |
+| 4 | codex/gpt-5.5/high | 92% | 0.0 | $0.7191 | 177s |
+| 5 | claude/claude-opus-4-8/max | 89% | 0.0 | $1.9141 | 483s |
+| 6 | codex/gpt-5.5/medium | 83% | 0.0 | $0.6595 | 146s |
+| 7 | codex/gpt-5.5/low | 78% | 0.0 | $0.3552 | 85s |
+| 8 | claude/claude-opus-4-8/high | 78% | 0.0 | $0.9105 | 200s |
+| 9 | claude/claude-opus-4-8/xhigh | 78% | 0.0 | $1.2589 | 291s |
+| 10 | claude/claude-opus-4-8/medium | 72% | 0.0 | $0.6586 | 140s |
+| 11 | claude/claude-opus-4-8/low | 67% | 0.0 | $0.5901 | 112s |
+| 12 | coderabbit/cli/default | 47% | 0.0 | — | 213s |
 
 ### Metrics (all configs)
 
 | Config | Runs | Recall (mean·min–max) | FP | Bonus | Speed | Out-tok | Est. $ |
 |--------|:----:|-----------------------|:--:|:-----:|:-----:|:-------:|:------:|
-| claude/claude-opus-4-8/`low` ⟨diff-v1⟩ | 1 | 75% · 75%–75% | 0.0 | 0.0 | 102.4s | 5,929 | $0.5180 |
+| claude/claude-opus-4-8/`low` ⟨diff-v1⟩ | 3 | 67% · 67%–67% | 0.0 | 0.0 | 112.2s | 6,566 | $0.5901 |
+| claude/claude-opus-4-8/`medium` ⟨diff-v1⟩ | 3 | 72% · 67%–75% | 0.0 | 0.0 | 139.5s | 8,522 | $0.6586 |
+| claude/claude-opus-4-8/`high` ⟨diff-v1⟩ | 3 | 78% · 67%–83% | 0.0 | 0.3 | 200.4s | 12,177 | $0.9105 |
+| claude/claude-opus-4-8/`xhigh` ⟨diff-v1⟩ | 3 | 78% · 67%–83% | 0.0 | 0.7 | 291.1s | 20,293 | $1.2589 |
+| claude/claude-opus-4-8/`max` ⟨diff-v1⟩ | 3 | 89% · 83%–92% | 0.0 | 0.3 | 483.2s | 32,781 | $1.9141 |
+| coderabbit/cli/`default` ⟨native⟩ | 3 | 47% · 33%–67% | 0.0 | 0.3 | 212.9s | — | — |
+| codex/gpt-5.5/`low` ⟨diff-v1⟩ | 3 | 78% · 75%–83% | 0.0 | 0.0 | 85.4s | 3,459 | $0.3552 |
+| codex/gpt-5.5/`medium` ⟨diff-v1⟩ | 3 | 83% · 83%–83% | 0.0 | 0.3 | 146.0s | 6,193 | $0.6595 |
+| codex/gpt-5.5/`high` ⟨diff-v1⟩ | 3 | 92% · 83%–100% | 0.0 | 0.3 | 176.7s | 7,549 | $0.7191 |
+| codex/gpt-5.5/`xhigh` ⟨diff-v1⟩ | 3 | 97% · 92%–100% | 0.0 | 0.0 | 273.3s | 12,988 | $1.0508 |
+| cursor/bugbot/`default` ⟨manual·diff-v1⟩ | 3 | 97% · 92%–100% | 0.0 | 0.0 | —s | — | — |
 | cursor-agent/composer-2.5-fast/`default` ⟨diff-v1⟩ | 3 | 97% · 92%–100% | 0.0 | 0.0 | 107.2s | 10,537 | $0.3651 |
 
-| Bug | claude-opus-4-8/`low` ⟨diff-v1⟩ | composer-2.5-fast/`default` ⟨diff-v1⟩ |
-|-----|:---:|:---:|
-| C1 crit lease_deadline now returns epoch millis; executor compares it against time.time() seconds, so leases never expire | ✅ 1/1 | ✅ 3/3 |
-| C2 crit ready_batch now sorts and returns the queue's internal list; dispatch pops from it, silently draining the queue | ✅ 1/1 | ✅ 3/3 |
-| C3 crit Hook dispatch now swallows all hook exceptions; the audit plugin raises AuditReject to veto execution, so the veto is silently ignored (audit bypass) | ❌ 0/1 | ✅ 3/3 |
-| H1 high pause handler: `state == RUNNING or QUEUED` is always truthy, so any job (including DONE) can be paused and later re-queued | ✅ 1/1 | ✅ 3/3 |
-| H2 high cache status key renamed job:{id} -> jobs/{id}; executor still invalidates the old hardcoded key, so completed jobs serve stale status until TTL | ✅ 1/1 | ✅ 3/3 |
-| H3 high New PAUSED state falls into dispatch's defensive else branch, which marks unknown-state jobs FAILED | ✅ 1/1 | ✅ 3/3 |
-| M1 medi PAUSED added to JobState and is_active, but the _TRANSITIONS table in the same file has no PAUSED entries — resume raises KeyError | ✅ 1/1 | ✅ 3/3 |
-| M2 medi get_job changed to return None instead of raising, but update_state in the same file still dereferences the result — AttributeError instead of clean JobNotFound | ❌ 0/1 | ✅ 3/3 |
-| M3 medi Event log ts now written in millis; the SDK timeline reader feeds it to datetime.fromtimestamp and second-based duration math (far-future dates, 1000x durations) | ❌ 0/1 | ⚠️ 2/3 |
-| L1 low parse_duration minutes branch multiplies by 6000 instead of 60000 | ✅ 1/1 | ✅ 3/3 |
-| L2 low RetryPolicy caps backoff with max() instead of min(), so every retry waits at least the cap | ✅ 1/1 | ✅ 3/3 |
-| L3 low Retry extraction left the old job.attempts += 1 in the executor while RetryPolicy.record_failure also increments — attempts counted twice, retries exhausted twice as fast | ✅ 1/1 | ✅ 3/3 |
+| Bug | claude-opus-4-8/`low` ⟨diff-v1⟩ | claude-opus-4-8/`medium` ⟨diff-v1⟩ | claude-opus-4-8/`high` ⟨diff-v1⟩ | claude-opus-4-8/`xhigh` ⟨diff-v1⟩ | claude-opus-4-8/`max` ⟨diff-v1⟩ | cli/`default` ⟨native⟩ | gpt-5.5/`low` ⟨diff-v1⟩ | gpt-5.5/`medium` ⟨diff-v1⟩ | gpt-5.5/`high` ⟨diff-v1⟩ | gpt-5.5/`xhigh` ⟨diff-v1⟩ | bugbot/`default` ⟨manual·diff-v1⟩ | composer-2.5-fast/`default` ⟨diff-v1⟩ |
+|-----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| C1 crit lease_deadline now returns epoch millis; executor compares it against time.time() seconds, so leases never expire | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ⚠️ 2/3 | ✅ 3/3 | ⚠️ 1/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| C2 crit ready_batch now sorts and returns the queue's internal list; dispatch pops from it, silently draining the queue | ✅ 3/3 | ✅ 3/3 | ⚠️ 2/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| C3 crit Hook dispatch now swallows all hook exceptions; the audit plugin raises AuditReject to veto execution, so the veto is silently ignored (audit bypass) | ❌ 0/3 | ⚠️ 1/3 | ❌ 0/3 | ⚠️ 1/3 | ⚠️ 1/3 | ❌ 0/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| H1 high pause handler: `state == RUNNING or QUEUED` is always truthy, so any job (including DONE) can be paused and later re-queued | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| H2 high cache status key renamed job:{id} -> jobs/{id}; executor still invalidates the old hardcoded key, so completed jobs serve stale status until TTL | ⚠️ 2/3 | ⚠️ 2/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ⚠️ 1/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| H3 high New PAUSED state falls into dispatch's defensive else branch, which marks unknown-state jobs FAILED | ⚠️ 1/3 | ⚠️ 2/3 | ⚠️ 2/3 | ✅ 3/3 | ✅ 3/3 | ❌ 0/3 | ⚠️ 2/3 | ⚠️ 2/3 | ⚠️ 2/3 | ✅ 3/3 | ⚠️ 2/3 | ✅ 3/3 |
+| M1 medi PAUSED added to JobState and is_active, but the _TRANSITIONS table in the same file has no PAUSED entries — resume raises KeyError | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ⚠️ 1/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| M2 medi get_job changed to return None instead of raising, but update_state in the same file still dereferences the result — AttributeError instead of clean JobNotFound | ❌ 0/3 | ❌ 0/3 | ❌ 0/3 | ⚠️ 1/3 | ⚠️ 2/3 | ⚠️ 2/3 | ⚠️ 1/3 | ⚠️ 2/3 | ⚠️ 2/3 | ⚠️ 2/3 | ✅ 3/3 | ✅ 3/3 |
+| M3 medi Event log ts now written in millis; the SDK timeline reader feeds it to datetime.fromtimestamp and second-based duration math (far-future dates, 1000x durations) | ❌ 0/3 | ❌ 0/3 | ✅ 3/3 | ⚠️ 1/3 | ⚠️ 2/3 | ❌ 0/3 | ❌ 0/3 | ⚠️ 1/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ⚠️ 2/3 |
+| L1 low parse_duration minutes branch multiplies by 6000 instead of 60000 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ⚠️ 1/3 | ⚠️ 1/3 | ⚠️ 2/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| L2 low RetryPolicy caps backoff with max() instead of min(), so every retry waits at least the cap | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
+| L3 low Retry extraction left the old job.attempts += 1 in the executor while RetryPolicy.record_failure also increments — attempts counted twice, retries exhausted twice as fast | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ⚠️ 2/3 | ✅ 3/3 | ❌ 0/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 | ✅ 3/3 |
 
 ## python-pricing
 

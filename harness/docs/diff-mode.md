@@ -77,7 +77,30 @@ uv run bench run -p python-crossfile --provider codex -m gpt-5.5 -e high
 
 Non-native tools get `review_prompt_diff.md` (id `diff-v1`); CodeRabbit runs
 native but now diffs against the real `main` — its home turf, making this the
-first project where the prompt axis is fair to it. Manual tools (Bugbot) need a
-real GitHub PR: materialize a repo with `bench run --keep-scratch` (or by hand
-with the steps above), push `main` + the PR branch to a private GitHub repo,
-open the PR, then score the captured findings with `bench judge`.
+first project where the prompt axis is fair to it.
+
+Manual tools (Bugbot) run locally, same as the whole-tree projects — no GitHub
+PR needed. Materialize a repo (the runner's exact steps, into the gitignored
+scratch area):
+
+```bash
+uv run python -c "
+import shutil; from pathlib import Path
+from bench.config import load_config
+from bench import diffmode
+cfg = load_config()
+copy = cfg.scratch_dir / 'python-crossfile-bugbot' / 'python-crossfile'
+shutil.copytree(cfg.projects_dir / 'python-crossfile', copy,
+                ignore=shutil.ignore_patterns('.git','.venv','__pycache__','.pytest_cache','*.pyc'))
+diffmode.apply_pr(copy, cfg.patch_dir('python-crossfile'))
+print(copy)"
+```
+
+Open that directory in Cursor (the PR branch is checked out; `main` is the
+base), trigger Bugbot with the contents of `review_prompt_diff.md` as the
+prompt, capture ALL findings per round to a file, then score:
+
+```bash
+uv run bench judge -p python-crossfile --provider cursor -m bugbot \
+  -r r1.txt -r r2.txt -r r3.txt
+```

@@ -2,12 +2,12 @@
   "project": "python-crossfile",
   "provider": "claude",
   "model": "claude-opus-4-8",
-  "effort": "low",
+  "effort": "xhigh",
   "prompt_id": "diff-v1",
   "judge_model": "opus",
   "code_hash": "a5d4dd12d58a",
   "runs": 3,
-  "created": "2026-07-06 22:37:16",
+  "created": "2026-07-06 23:13:46",
   "planted": [
     {
       "id": "C1",
@@ -127,7 +127,44 @@
       "found": [
         "C1",
         "C2",
+        "C3",
         "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M3",
+        "L1",
+        "L2"
+      ],
+      "false_positives": 0,
+      "bonus": 2,
+      "elapsed_s": 289.2,
+      "usage": {
+        "input_tokens": 4577,
+        "cached_input_tokens": 425636,
+        "cache_creation_input_tokens": 50080,
+        "output_tokens": 20002
+      },
+      "cost_usd": 1.236553,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "Retention never expires ms-stamped events",
+          "evidence": "RetentionPolicy computes its cutoff in epoch seconds... events are written in ms... never expired, so the log grows without bound"
+        },
+        {
+          "title": "Inspector/DrainCoordinator iterate live queue list without lock",
+          "evidence": "these readers iterate the list returned by ready_batch() outside the queue lock... RuntimeError: list changed size during iteration"
+        }
+      ],
+      "base_found": []
+    },
+    {
+      "found": [
+        "C2",
+        "H1",
+        "H2",
         "H3",
         "M1",
         "L1",
@@ -136,14 +173,14 @@
       ],
       "false_positives": 0,
       "bonus": 0,
-      "elapsed_s": 105.8,
+      "elapsed_s": 264.8,
       "usage": {
-        "input_tokens": 4317,
-        "cached_input_tokens": 284134,
-        "cache_creation_input_tokens": 28664,
-        "output_tokens": 6667
+        "input_tokens": 4435,
+        "cached_input_tokens": 286906,
+        "cache_creation_input_tokens": 44949,
+        "output_tokens": 18888
       },
-      "cost_usd": 0.6169669999999999,
+      "cost_usd": 1.0873179999999998,
       "returncode": 0,
       "fp_items": [],
       "bonus_items": [],
@@ -155,47 +192,23 @@
         "C2",
         "H1",
         "H2",
+        "H3",
         "M1",
+        "M2",
         "L1",
         "L2",
         "L3"
       ],
       "false_positives": 0,
       "bonus": 0,
-      "elapsed_s": 111.9,
+      "elapsed_s": 319.3,
       "usage": {
-        "input_tokens": 4315,
-        "cached_input_tokens": 243961,
-        "cache_creation_input_tokens": 28034,
-        "output_tokens": 6727
+        "input_tokens": 4445,
+        "cached_input_tokens": 636381,
+        "cache_creation_input_tokens": 56268,
+        "output_tokens": 21989
       },
-      "cost_usd": 0.5920704999999999,
-      "returncode": 0,
-      "fp_items": [],
-      "bonus_items": [],
-      "base_found": []
-    },
-    {
-      "found": [
-        "C1",
-        "C2",
-        "H1",
-        "H2",
-        "M1",
-        "L1",
-        "L2",
-        "L3"
-      ],
-      "false_positives": 0,
-      "bonus": 0,
-      "elapsed_s": 118.9,
-      "usage": {
-        "input_tokens": 4177,
-        "cached_input_tokens": 238241,
-        "cache_creation_input_tokens": 26371,
-        "output_tokens": 6303
-      },
-      "cost_usd": 0.5612904999999999,
+      "cost_usd": 1.4528205,
       "returncode": 0,
       "fp_items": [],
       "bonus_items": [],
@@ -203,18 +216,18 @@
     }
   ],
   "per_bug": {
-    "C1": 3,
+    "C1": 2,
     "C2": 3,
-    "C3": 0,
+    "C3": 1,
     "H1": 3,
-    "H2": 2,
-    "H3": 1,
+    "H2": 3,
+    "H3": 3,
     "M1": 3,
-    "M2": 0,
-    "M3": 0,
+    "M2": 1,
+    "M3": 1,
     "L1": 3,
     "L2": 3,
-    "L3": 3
+    "L3": 2
   },
   "base_bugs": [
     {
@@ -276,9 +289,9 @@
   },
   "metrics": {
     "recall": {
-      "mean": 0.6666666666666666,
+      "mean": 0.7777777777777778,
       "min": 0.6666666666666666,
-      "max": 0.6666666666666666
+      "max": 0.8333333333333334
     },
     "out_of_diff_discovery": {
       "mean": 0.0,
@@ -295,8 +308,8 @@
       "D1": {
         "bugs": 3,
         "mean": 0.6666666666666666,
-        "min": 0.6666666666666666,
-        "max": 0.6666666666666666
+        "min": 0.3333333333333333,
+        "max": 1.0
       },
       "D2": {
         "bugs": 3,
@@ -306,9 +319,9 @@
       },
       "D3": {
         "bugs": 3,
-        "mean": 0.1111111111111111,
-        "min": 0.0,
-        "max": 0.3333333333333333
+        "mean": 0.5555555555555555,
+        "min": 0.3333333333333333,
+        "max": 1.0
       }
     },
     "false_positives": {
@@ -317,29 +330,29 @@
       "max": 0
     },
     "bonus": {
-      "mean": 0.0,
+      "mean": 0.6666666666666666,
       "min": 0,
-      "max": 0
+      "max": 2
     },
     "elapsed_s": {
-      "mean": 112.2,
-      "min": 105.8,
-      "max": 118.9
+      "mean": 291.09999999999997,
+      "min": 264.8,
+      "max": 319.3
     },
     "output_tokens": {
-      "mean": 6565.666666666667,
-      "min": 6303,
-      "max": 6727
+      "mean": 20293.0,
+      "min": 18888,
+      "max": 21989
     },
     "total_tokens": {
-      "mean": 10835.333333333334,
-      "min": 10480,
-      "max": 11042
+      "mean": 24778.666666666668,
+      "min": 23323,
+      "max": 26434
     },
     "cost_usd": {
-      "mean": 0.5901093333333333,
-      "min": 0.5612904999999999,
-      "max": 0.6169669999999999
+      "mean": 1.2588971666666666,
+      "min": 1.0873179999999998,
+      "max": 1.4528205
     }
   }
 }

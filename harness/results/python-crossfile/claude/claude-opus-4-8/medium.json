@@ -2,12 +2,12 @@
   "project": "python-crossfile",
   "provider": "claude",
   "model": "claude-opus-4-8",
-  "effort": "low",
+  "effort": "medium",
   "prompt_id": "diff-v1",
   "judge_model": "opus",
   "code_hash": "a5d4dd12d58a",
   "runs": 3,
-  "created": "2026-07-06 22:37:16",
+  "created": "2026-07-06 22:45:46",
   "planted": [
     {
       "id": "C1",
@@ -128,6 +128,7 @@
         "C1",
         "C2",
         "H1",
+        "H2",
         "H3",
         "M1",
         "L1",
@@ -136,66 +137,67 @@
       ],
       "false_positives": 0,
       "bonus": 0,
-      "elapsed_s": 105.8,
-      "usage": {
-        "input_tokens": 4317,
-        "cached_input_tokens": 284134,
-        "cache_creation_input_tokens": 28664,
-        "output_tokens": 6667
-      },
-      "cost_usd": 0.6169669999999999,
-      "returncode": 0,
-      "fp_items": [],
-      "bonus_items": [],
-      "base_found": []
-    },
-    {
-      "found": [
-        "C1",
-        "C2",
-        "H1",
-        "H2",
-        "M1",
-        "L1",
-        "L2",
-        "L3"
-      ],
-      "false_positives": 0,
-      "bonus": 0,
-      "elapsed_s": 111.9,
-      "usage": {
-        "input_tokens": 4315,
-        "cached_input_tokens": 243961,
-        "cache_creation_input_tokens": 28034,
-        "output_tokens": 6727
-      },
-      "cost_usd": 0.5920704999999999,
-      "returncode": 0,
-      "fp_items": [],
-      "bonus_items": [],
-      "base_found": []
-    },
-    {
-      "found": [
-        "C1",
-        "C2",
-        "H1",
-        "H2",
-        "M1",
-        "L1",
-        "L2",
-        "L3"
-      ],
-      "false_positives": 0,
-      "bonus": 0,
-      "elapsed_s": 118.9,
+      "elapsed_s": 145.5,
       "usage": {
         "input_tokens": 4177,
-        "cached_input_tokens": 238241,
-        "cache_creation_input_tokens": 26371,
-        "output_tokens": 6303
+        "cached_input_tokens": 263937,
+        "cache_creation_input_tokens": 29122,
+        "output_tokens": 8118
       },
-      "cost_usd": 0.5612904999999999,
+      "cost_usd": 0.6470235,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [],
+      "base_found": []
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 0,
+      "elapsed_s": 143.1,
+      "usage": {
+        "input_tokens": 4175,
+        "cached_input_tokens": 230887,
+        "cache_creation_input_tokens": 31522,
+        "output_tokens": 8755
+      },
+      "cost_usd": 0.6704135,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [],
+      "base_found": []
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "M1",
+        "L1",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 0,
+      "elapsed_s": 129.9,
+      "usage": {
+        "input_tokens": 4311,
+        "cached_input_tokens": 185485,
+        "cache_creation_input_tokens": 32684,
+        "output_tokens": 8692
+      },
+      "cost_usd": 0.6584375,
       "returncode": 0,
       "fp_items": [],
       "bonus_items": [],
@@ -205,10 +207,10 @@
   "per_bug": {
     "C1": 3,
     "C2": 3,
-    "C3": 0,
+    "C3": 1,
     "H1": 3,
     "H2": 2,
-    "H3": 1,
+    "H3": 2,
     "M1": 3,
     "M2": 0,
     "M3": 0,
@@ -276,9 +278,9 @@
   },
   "metrics": {
     "recall": {
-      "mean": 0.6666666666666666,
+      "mean": 0.7222222222222222,
       "min": 0.6666666666666666,
-      "max": 0.6666666666666666
+      "max": 0.75
     },
     "out_of_diff_discovery": {
       "mean": 0.0,
@@ -306,8 +308,8 @@
       },
       "D3": {
         "bugs": 3,
-        "mean": 0.1111111111111111,
-        "min": 0.0,
+        "mean": 0.3333333333333333,
+        "min": 0.3333333333333333,
         "max": 0.3333333333333333
       }
     },
@@ -322,24 +324,24 @@
       "max": 0
     },
     "elapsed_s": {
-      "mean": 112.2,
-      "min": 105.8,
-      "max": 118.9
+      "mean": 139.5,
+      "min": 129.9,
+      "max": 145.5
     },
     "output_tokens": {
-      "mean": 6565.666666666667,
-      "min": 6303,
-      "max": 6727
+      "mean": 8521.666666666666,
+      "min": 8118,
+      "max": 8755
     },
     "total_tokens": {
-      "mean": 10835.333333333334,
-      "min": 10480,
-      "max": 11042
+      "mean": 12742.666666666666,
+      "min": 12295,
+      "max": 13003
     },
     "cost_usd": {
-      "mean": 0.5901093333333333,
-      "min": 0.5612904999999999,
-      "max": 0.6169669999999999
+      "mean": 0.6586248333333333,
+      "min": 0.6470235,
+      "max": 0.6704135
     }
   }
 }

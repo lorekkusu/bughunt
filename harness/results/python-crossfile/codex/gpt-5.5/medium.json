@@ -1,13 +1,13 @@
 {
   "project": "python-crossfile",
-  "provider": "claude",
-  "model": "claude-opus-4-8",
-  "effort": "low",
+  "provider": "codex",
+  "model": "gpt-5.5",
+  "effort": "medium",
   "prompt_id": "diff-v1",
   "judge_model": "opus",
   "code_hash": "a5d4dd12d58a",
   "runs": 3,
-  "created": "2026-07-06 22:37:16",
+  "created": "2026-07-06 22:44:36",
   "planted": [
     {
       "id": "C1",
@@ -127,23 +127,58 @@
       "found": [
         "C1",
         "C2",
+        "C3",
         "H1",
+        "H2",
         "H3",
         "M1",
-        "L1",
+        "M3",
+        "L2",
+        "L3"
+      ],
+      "false_positives": 0,
+      "bonus": 1,
+      "elapsed_s": 156.5,
+      "usage": {
+        "input_tokens": 351716,
+        "cached_input_tokens": 264832,
+        "output_tokens": 6746,
+        "reasoning_output_tokens": 2065
+      },
+      "cost_usd": 0.769216,
+      "returncode": 0,
+      "fp_items": [],
+      "bonus_items": [
+        {
+          "title": "retention.py compares millis event ts to seconds cutoff",
+          "evidence": "Retention still compares event ts values to an epoch-seconds cutoff... old event records will not expire"
+        }
+      ],
+      "base_found": []
+    },
+    {
+      "found": [
+        "C1",
+        "C2",
+        "C3",
+        "H1",
+        "H2",
+        "H3",
+        "M1",
+        "M2",
         "L2",
         "L3"
       ],
       "false_positives": 0,
       "bonus": 0,
-      "elapsed_s": 105.8,
+      "elapsed_s": 137.2,
       "usage": {
-        "input_tokens": 4317,
-        "cached_input_tokens": 284134,
-        "cache_creation_input_tokens": 28664,
-        "output_tokens": 6667
+        "input_tokens": 357511,
+        "cached_input_tokens": 281216,
+        "output_tokens": 5652,
+        "reasoning_output_tokens": 1570
       },
-      "cost_usd": 0.6169669999999999,
+      "cost_usd": 0.691643,
       "returncode": 0,
       "fp_items": [],
       "bonus_items": [],
@@ -153,49 +188,25 @@
       "found": [
         "C1",
         "C2",
+        "C3",
         "H1",
         "H2",
         "M1",
+        "M2",
         "L1",
         "L2",
         "L3"
       ],
       "false_positives": 0,
       "bonus": 0,
-      "elapsed_s": 111.9,
+      "elapsed_s": 144.2,
       "usage": {
-        "input_tokens": 4315,
-        "cached_input_tokens": 243961,
-        "cache_creation_input_tokens": 28034,
-        "output_tokens": 6727
+        "input_tokens": 311357,
+        "cached_input_tokens": 272128,
+        "output_tokens": 6180,
+        "reasoning_output_tokens": 1921
       },
-      "cost_usd": 0.5920704999999999,
-      "returncode": 0,
-      "fp_items": [],
-      "bonus_items": [],
-      "base_found": []
-    },
-    {
-      "found": [
-        "C1",
-        "C2",
-        "H1",
-        "H2",
-        "M1",
-        "L1",
-        "L2",
-        "L3"
-      ],
-      "false_positives": 0,
-      "bonus": 0,
-      "elapsed_s": 118.9,
-      "usage": {
-        "input_tokens": 4177,
-        "cached_input_tokens": 238241,
-        "cache_creation_input_tokens": 26371,
-        "output_tokens": 6303
-      },
-      "cost_usd": 0.5612904999999999,
+      "cost_usd": 0.517609,
       "returncode": 0,
       "fp_items": [],
       "bonus_items": [],
@@ -205,14 +216,14 @@
   "per_bug": {
     "C1": 3,
     "C2": 3,
-    "C3": 0,
+    "C3": 3,
     "H1": 3,
-    "H2": 2,
-    "H3": 1,
+    "H2": 3,
+    "H3": 2,
     "M1": 3,
-    "M2": 0,
-    "M3": 0,
-    "L1": 3,
+    "M2": 2,
+    "M3": 1,
+    "L1": 1,
     "L2": 3,
     "L3": 3
   },
@@ -276,9 +287,9 @@
   },
   "metrics": {
     "recall": {
-      "mean": 0.6666666666666666,
-      "min": 0.6666666666666666,
-      "max": 0.6666666666666666
+      "mean": 0.8333333333333334,
+      "min": 0.8333333333333334,
+      "max": 0.8333333333333334
     },
     "out_of_diff_discovery": {
       "mean": 0.0,
@@ -288,27 +299,27 @@
     "recall_by_distance": {
       "D0": {
         "bugs": 3,
-        "mean": 1.0,
-        "min": 1.0,
+        "mean": 0.7777777777777777,
+        "min": 0.6666666666666666,
         "max": 1.0
       },
       "D1": {
-        "bugs": 3,
-        "mean": 0.6666666666666666,
-        "min": 0.6666666666666666,
-        "max": 0.6666666666666666
-      },
-      "D2": {
         "bugs": 3,
         "mean": 0.8888888888888888,
         "min": 0.6666666666666666,
         "max": 1.0
       },
+      "D2": {
+        "bugs": 3,
+        "mean": 1.0,
+        "min": 1.0,
+        "max": 1.0
+      },
       "D3": {
         "bugs": 3,
-        "mean": 0.1111111111111111,
-        "min": 0.0,
-        "max": 0.3333333333333333
+        "mean": 0.6666666666666666,
+        "min": 0.3333333333333333,
+        "max": 1.0
       }
     },
     "false_positives": {
@@ -317,29 +328,29 @@
       "max": 0
     },
     "bonus": {
-      "mean": 0.0,
+      "mean": 0.3333333333333333,
       "min": 0,
-      "max": 0
+      "max": 1
     },
     "elapsed_s": {
-      "mean": 112.2,
-      "min": 105.8,
-      "max": 118.9
+      "mean": 145.96666666666667,
+      "min": 137.2,
+      "max": 156.5
     },
     "output_tokens": {
-      "mean": 6565.666666666667,
-      "min": 6303,
-      "max": 6727
+      "mean": 6192.666666666667,
+      "min": 5652,
+      "max": 6746
     },
     "total_tokens": {
-      "mean": 10835.333333333334,
-      "min": 10480,
-      "max": 11042
+      "mean": 346387.3333333333,
+      "min": 317537,
+      "max": 363163
     },
     "cost_usd": {
-      "mean": 0.5901093333333333,
-      "min": 0.5612904999999999,
-      "max": 0.6169669999999999
+      "mean": 0.6594893333333333,
+      "min": 0.517609,
+      "max": 0.769216
     }
   }
 }

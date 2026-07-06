@@ -2,12 +2,12 @@
   "project": "python-crossfile",
   "provider": "claude",
   "model": "claude-opus-4-8",
-  "effort": "low",
+  "effort": "high",
   "prompt_id": "diff-v1",
   "judge_model": "opus",
   "code_hash": "a5d4dd12d58a",
   "runs": 3,
-  "created": "2026-07-06 22:37:16",
+  "created": "2026-07-06 22:57:33",
   "planted": [
     {
       "id": "C1",
@@ -128,22 +128,24 @@
         "C1",
         "C2",
         "H1",
+        "H2",
         "H3",
         "M1",
+        "M3",
         "L1",
         "L2",
         "L3"
       ],
       "false_positives": 0,
       "bonus": 0,
-      "elapsed_s": 105.8,
+      "elapsed_s": 225.0,
       "usage": {
-        "input_tokens": 4317,
-        "cached_input_tokens": 284134,
-        "cache_creation_input_tokens": 28664,
-        "output_tokens": 6667
+        "input_tokens": 4225,
+        "cached_input_tokens": 382635,
+        "cache_creation_input_tokens": 38622,
+        "output_tokens": 14110
       },
-      "cost_usd": 0.6169669999999999,
+      "cost_usd": 0.9514125,
       "returncode": 0,
       "fp_items": [],
       "bonus_items": [],
@@ -155,47 +157,54 @@
         "C2",
         "H1",
         "H2",
+        "H3",
         "M1",
+        "M3",
         "L1",
         "L2",
         "L3"
       ],
       "false_positives": 0,
-      "bonus": 0,
-      "elapsed_s": 111.9,
+      "bonus": 1,
+      "elapsed_s": 199.2,
       "usage": {
-        "input_tokens": 4315,
-        "cached_input_tokens": 243961,
-        "cache_creation_input_tokens": 28034,
-        "output_tokens": 6727
+        "input_tokens": 4456,
+        "cached_input_tokens": 542684,
+        "cache_creation_input_tokens": 39267,
+        "output_tokens": 11794
       },
-      "cost_usd": 0.5920704999999999,
+      "cost_usd": 0.981142,
       "returncode": 0,
       "fp_items": [],
-      "bonus_items": [],
+      "bonus_items": [
+        {
+          "title": "Stale inspector.ready_batch docstring after aliasing change",
+          "evidence": "inspector.py:30 still claims ready_batch returns a fresh snapshot list, which is now false"
+        }
+      ],
       "base_found": []
     },
     {
       "found": [
         "C1",
-        "C2",
         "H1",
         "H2",
         "M1",
+        "M3",
         "L1",
         "L2",
         "L3"
       ],
       "false_positives": 0,
       "bonus": 0,
-      "elapsed_s": 118.9,
+      "elapsed_s": 177.0,
       "usage": {
-        "input_tokens": 4177,
-        "cached_input_tokens": 238241,
-        "cache_creation_input_tokens": 26371,
-        "output_tokens": 6303
+        "input_tokens": 4310,
+        "cached_input_tokens": 341052,
+        "cache_creation_input_tokens": 34117,
+        "output_tokens": 10626
       },
-      "cost_usd": 0.5612904999999999,
+      "cost_usd": 0.798896,
       "returncode": 0,
       "fp_items": [],
       "bonus_items": [],
@@ -204,14 +213,14 @@
   ],
   "per_bug": {
     "C1": 3,
-    "C2": 3,
+    "C2": 2,
     "C3": 0,
     "H1": 3,
-    "H2": 2,
-    "H3": 1,
+    "H2": 3,
+    "H3": 2,
     "M1": 3,
     "M2": 0,
-    "M3": 0,
+    "M3": 3,
     "L1": 3,
     "L2": 3,
     "L3": 3
@@ -276,9 +285,9 @@
   },
   "metrics": {
     "recall": {
-      "mean": 0.6666666666666666,
+      "mean": 0.7777777777777778,
       "min": 0.6666666666666666,
-      "max": 0.6666666666666666
+      "max": 0.8333333333333334
     },
     "out_of_diff_discovery": {
       "mean": 0.0,
@@ -306,9 +315,9 @@
       },
       "D3": {
         "bugs": 3,
-        "mean": 0.1111111111111111,
-        "min": 0.0,
-        "max": 0.3333333333333333
+        "mean": 0.5555555555555555,
+        "min": 0.3333333333333333,
+        "max": 0.6666666666666666
       }
     },
     "false_positives": {
@@ -317,29 +326,29 @@
       "max": 0
     },
     "bonus": {
-      "mean": 0.0,
+      "mean": 0.3333333333333333,
       "min": 0,
-      "max": 0
+      "max": 1
     },
     "elapsed_s": {
-      "mean": 112.2,
-      "min": 105.8,
-      "max": 118.9
+      "mean": 200.4,
+      "min": 177.0,
+      "max": 225.0
     },
     "output_tokens": {
-      "mean": 6565.666666666667,
-      "min": 6303,
-      "max": 6727
+      "mean": 12176.666666666666,
+      "min": 10626,
+      "max": 14110
     },
     "total_tokens": {
-      "mean": 10835.333333333334,
-      "min": 10480,
-      "max": 11042
+      "mean": 16507.0,
+      "min": 14936,
+      "max": 18335
     },
     "cost_usd": {
-      "mean": 0.5901093333333333,
-      "min": 0.5612904999999999,
-      "max": 0.6169669999999999
+      "mean": 0.9104835000000001,
+      "min": 0.798896,
+      "max": 0.981142
     }
   }
 }

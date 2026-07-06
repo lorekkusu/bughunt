@@ -37,7 +37,7 @@ Themes, ranked by how well they discriminate tools (✅ = already shipped):
 | Theme | Targets | Discrimination |
 |-------|---------|----------------|
 | `*-concurrency` | races, TOCTOU, atomicity, deadlock, lost updates | ★★★★★ |
-| `*-crossfile` | broken invariants / contracts across modules | ★★★★★ |
+| `*-crossfile` ✅ `python-crossfile` | broken invariants / contracts across modules, measured per context distance (diff mode — see `diff-mode.md`) | ★★★★★ |
 | `*-money` ✅ `python-pricing` | float/Decimal, rounding, negative/overflow, idempotency | ★★★★ |
 | `*-datetime` ✅ `python-scheduling` | intervals, tz/naive-vs-UTC, recurrence, off-by-one slots | ★★★★ |
 | `*-authz` | missing/conditional auth, IDOR, workflow-state violations | ★★★★ |

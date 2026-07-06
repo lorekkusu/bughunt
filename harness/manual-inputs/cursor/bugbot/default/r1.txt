@@ -1,17 +1,18 @@
-Bugbot found **11 defects** (no critical issues). The branch diff was empty because this repo has no commits yet, so the review used the full source tree instead.
+Bugbot found **11 findings** in this PR (no critical-severity items; several high-severity correctness bugs).
 
 | Severity | Location | Finding |
 |----------|----------|---------|
-| high | `src/booking/interval.py:12` | `Interval.overlaps` only checks whether `other.start` falls in `[self.start, self.end)`, so overlap is asymmetric. When the other interval starts earlier and extends into this one, the method returns false and scheduling logic can allow double bookings. |
-| high | `src/booking/calendar.py:28` | `has_conflict` skips bookings on a different start date, so overnight or cross-midnight overlaps are never detected even when the time ranges actually conflict. |
-| high | `src/booking/calendar.py:52` | `first_booking` returns `self._bookings[0]` (insertion order), not the earliest by start time as documented. It also raises `IndexError` on an empty schedule. |
-| high | `src/booking/recurrence.py:8` | `weekly` uses `range(1, count + 1)`, so the first returned date is one week after `start` instead of including `start` as the docstring promises. |
-| high | `src/booking/reminders.py:8` | `is_past` compares a naive local `when` against `datetime.utcnow()`. Outside UTC, past/future results are wrong because local time is compared to UTC without normalization. |
-| medium | `src/booking/interval.py:16` | `duration_minutes` uses `timedelta.seconds`, which ignores whole days. Intervals spanning midnight or multiple days report at most 1439 minutes instead of the true duration. |
-| medium | `src/booking/interval.py:20` | `contains` docstring defines half-open membership (`start <= when < end`), but the code uses `when <= end`, so the end boundary is incorrectly treated as inside the interval. |
-| medium | `src/booking/parse.py:10` | `parse_hhmm` splits and casts to int with no range checks despite the docstring promising rejection of out-of-range values. Inputs like `25:00` or `09:99` are accepted. |
-| medium | `src/booking/calendar.py:61` | `busiest_hour` calls `max()` on an empty `counts` dict when there are no bookings, raising `ValueError` instead of returning a sensible result. |
-| medium | `src/booking/calendar.py:46` | `next_available` treats `t == b.end` as still inside a booking (`b.start <= t <= b.end`). With half-open intervals, the instant a booking ends should already be available. |
-| medium | `src/booking/recurrence.py:13` | `monthly` advances with `timedelta(days=30 * i)` instead of calendar months, so occurrences drift from true month boundaries and mishandle varying month lengths. |
+| high | `src/taskqueue/core/queue.py:55-57` | `ready_batch` returns the internal `_entries` list and the dispatcher calls `batch.pop(0)` on it, mutating the live queue. Jobs that are not ready, still leased, or in backoff are removed and never dispatched again. |
+| high | `src/taskqueue/api/handlers.py:99` | The pause guard is `job.state == JobState.RUNNING or JobState.QUEUED`. Because `JobState.QUEUED` is always truthy, the check passes for every state, including terminal ones. |
+| high | `src/taskqueue/workers/executor.py:62` | `claim` stores `lease_deadline` in epoch milliseconds, but `_lease_expired` compares it to `timing.now()` in epoch seconds. Expired leases are effectively never detected. |
+| high | `src/taskqueue/clients/plugins/base.py:63-68` | `_run_hooks` catches all exceptions from `before_execute` and logs them. `AuditReject` from the audit allowlist plugin is swallowed, so rejected jobs still run. |
+| high | `src/taskqueue/workers/executor.py:111-123` | `_handle_failure` increments `job.attempts` and then calls `RetryPolicy.record_failure`, which increments again. Each failure consumes two attempts and skews backoff. |
+| high | `src/taskqueue/core/retry.py:39` | `next_delay_ms` uses `max(delay, self.max_delay_ms)` with a comment about capping delay. `max` forces delays to be at least `max_delay_ms` and does not cap larger values. |
+| high | `src/taskqueue/core/job.py:47-53` | `JobState.PAUSED` is added but not included in `_TRANSITIONS`. `can_transition` indexes `_TRANSITIONS[src]`, so paused jobs raise `KeyError` instead of returning a boolean. |
+| high | `src/taskqueue/workers/dispatch.py:53-55` | The dispatcher handles only QUEUED, RUNNING, and terminal states. PAUSED jobs fall through to the unknown-state branch and are marked FAILED. |
+| high | `src/taskqueue/storage/events.py:29` | Event records write `ts` as epoch milliseconds, but consumers (SDK timeline, retention cutoff) still assume epoch seconds, breaking time-based logic. |
+| medium | `src/taskqueue/workers/executor.py:96` | Cache invalidation uses `f"job:{job.id}"` while `status_key` now returns `jobs/{job_id}`. Executor-driven state changes no longer invalidate the API status cache. |
+| medium | `src/taskqueue/core/timing.py:48` | `parse_duration` converts minute suffixes with `* 6000` instead of `* 60_000`, so `"5m"` yields 30 seconds instead of five minutes. |
+| medium | `src/taskqueue/storage/store.py:39-40` | `get_job` can return `None`, but `update_state` immediately accesses `job.state` without checking for a missing job. |
 
-`src/booking/safe.py` was reviewed and had no findings — it appears to be the correctly implemented reference for overlap, duration, and sorting.
+These are all attributable to this PR’s changes. Bugbot did not report any pre-existing issues in a separate section.
